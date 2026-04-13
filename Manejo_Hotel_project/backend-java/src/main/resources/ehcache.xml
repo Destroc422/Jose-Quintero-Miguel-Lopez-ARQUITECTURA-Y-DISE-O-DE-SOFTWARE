@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.ehcache.org/v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.ehcache.org/v3
+        http://www.ehcache.org/schema/ehcache-core-3.0.xsd">
+
+    <!-- =============================================
+         CONFIGURACIÓN DE CACHE PARA HERMOSA CARTAGENA
+         ============================================= -->
+    
+    <!-- Cache para servicios turísticos -->
+    <cache alias="servicios">
+        <expiry>
+            <ttl unit="minutes">30</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+    
+    <!-- Cache para usuarios -->
+    <cache alias="usuarios">
+        <expiry>
+            <ttl unit="minutes">15</ttl>
+        </expiry>
+        <heap unit="entries">500</heap>
+    </cache>
+    
+    <!-- Cache para reservas -->
+    <cache alias="reservas">
+        <expiry>
+            <ttl unit="minutes">10</ttl>
+        </expiry>
+        <heap unit="entries">2000</heap>
+    </cache>
+    
+    <!-- Cache para pagos -->
+    <cache alias="pagos">
+        <expiry>
+            <ttl unit="minutes">5</ttl>
+        </expiry>
+        <heap unit="entries">1500</heap>
+    </cache>
+    
+    <!-- Cache para proveedores -->
+    <cache alias="proveedores">
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <heap unit="entries">200</heap>
+    </cache>
+    
+    <!-- Cache para estadísticas -->
+    <cache alias="estadisticas">
+        <expiry>
+            <ttl unit="minutes">5</ttl>
+        </expiry>
+        <heap unit="entries">100</heap>
+    </cache>
+    
+    <!-- Cache para tokens JWT -->
+    <cache alias="jwtTokens">
+        <expiry>
+            <ttl unit="hours">24</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+</config>

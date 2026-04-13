@@ -1,0 +1,278 @@
+# =============================================
+# SISTEMA DE GESTIÓN TURÍSTICA "HERMOSA CARTAGENA"
+# CONFIGURACIÓN PRINCIPAL DE LA APLICACIÓN
+# =============================================
+
+spring:
+  # Perfiles de configuración
+  profiles:
+    active: dev
+  
+  # Configuración de la aplicación
+  application:
+    name: hermosa-cartagena-backend
+    version: 2.0.0
+    description: Sistema de Gestión Turística Moderno
+  
+  # Configuración de la base de datos
+  datasource:
+    url: jdbc:mysql://localhost:3306/hermosa_cartagena?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: HermosaCartagenaPool
+  
+  # Configuración JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        connection:
+          provider_disables_autocommit: true
+        generate_statistics: true
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region_factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+  
+  # Configuración de caché
+  cache:
+    type: jcache
+    jcache:
+      config: classpath:ehcache.xml
+      provider: org.ehcache.jsr107.EhcacheCachingProvider
+  
+  # Configuración de Jackson
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: UTC
+  
+  # Configuración de correo
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:info@hermosacartagena.com}
+    password: ${EMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        debug: false
+  
+  # Configuración de archivos multipart
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # Configuración de internacionalización
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    cache-duration: 3600
+
+# Configuración de SpringDoc (OpenAPI)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+    disable-swagger-default-url: true
+    display-request-duration: true
+    default-models-expand-depth: 1
+    default-model-expand-depth: 1
+
+# Configuración personalizada de la aplicación
+hermosa-cartagena:
+  # Configuración de seguridad JWT
+  security:
+    jwt:
+      secret: ${JWT_SECRET:miClaveSecretaSuperSeguraParaJWT12345678901234567890}
+      expiration: ${JWT_EXPIRATION:86400} # 24 horas en segundos
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800} # 7 días
+      issuer: hermosa-cartagena
+      audience: hermosa-cartagena-users
+  
+  # Configuración del sistema distribuido
+  distributed:
+    enabled: true
+    server:
+      host: localhost
+      port: 1099
+      registry-port: 1099
+    client:
+      timeout: 5000
+      retry-attempts: 3
+  
+  # Configuración de archivos
+  files:
+    upload-dir: ${UPLOAD_DIR:./uploads}
+    max-size: 10485760 # 10MB
+    allowed-types: jpg,jpeg,png,gif,pdf,doc,docx
+  
+  # Configuración de reportes
+  reports:
+    output-dir: ${REPORTS_DIR:./reports}
+    template-dir: ${TEMPLATES_DIR:./templates}
+  
+  # Configuración de auditoría
+  audit:
+    enabled: true
+    table: historial_operaciones
+    include-methods: POST,PUT,DELETE,PATCH
+  
+  # Configuración de notificaciones
+  notifications:
+    email-enabled: true
+    sms-enabled: false
+    push-enabled: false
+
+# Configuración de Actuator (monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# Configuración de logging
+logging:
+  level:
+    com.hermosacartagena: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.cache: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/hermosa-cartagena.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
+
+# Configuración específica por perfil
+---
+# Perfil de Desarrollo
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/hermosa_cartagena_dev?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.hermosacartagena: DEBUG
+
+---
+# Perfil de Producción
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: jdbc:mysql://prod-db-host:3306/hermosa_cartagena?useSSL=true&serverTimezone=UTC
+    username: ${DB_USERNAME:hermosa_user}
+    password: ${DB_PASSWORD:}
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.hermosacartagena: INFO
+    org.springframework.security: WARN
+
+---
+# Perfil de Testing
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+  
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.hermosacartagena: DEBUG
