@@ -1,0 +1,419 @@
+@startuml HermosaCartagena_UML
+
+!define RECTANGLE class
+!define DARKBLUE
+!define LIGHTBLUE
+!define LIGHTGREEN
+!define LIGHTORANGE
+!define LIGHTRED
+
+' =============================================
+' CONFIGURACIÓN DE ESTILOS
+' =============================================
+skinparam class {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+
+skinparam database {
+    BackgroundColor LightGreen
+    BorderColor DarkBlue
+}
+
+skinparam actor {
+    BackgroundColor LightORANGE
+    BorderColor DarkBlue
+}
+
+skinparam note {
+    BackgroundColor LightRed
+    BorderColor DarkBlue
+}
+
+' =============================================
+' ACTORES DEL SISTEMA
+' =============================================
+actor Administrador as ADMIN
+actor Empleado as EMPLEADO  
+actor Cliente as CLIENTE
+actor "Sistema Externo" as EXTERNO
+
+' =============================================
+' FRONTEND - CAPA DE PRESENTACIÓN
+' =============================================
+package "Frontend" {
+    class LoginController {
+        +authenticate(usuario, password): TokenResponse
+        +logout(): void
+        +validateToken(token): boolean
+        +refreshToken(refreshToken): TokenResponse
+    }
+    
+    class DashboardController {
+        +loadDashboard(role): DashboardData
+        +updateCharts(data): void
+        +handleNotifications(): Notification[]
+    }
+    
+    class ServicioController {
+        +searchServicios(criteria): Servicio[]
+        +getServicioDetails(id): Servicio
+        +checkAvailability(id, dates): boolean
+        +reservarServicio(reserva): Reserva
+    }
+    
+    class ReservaController {
+        +createReserva(data): Reserva
+        +cancelReserva(id, motivo): void
+        +getMisReservas(): Reserva[]
+        +updateReserva(id, data): Reserva
+    }
+}
+
+' =============================================
+' API GATEWAY - PUERTA DE ENTRADA
+' =============================================
+package "API Gateway" {
+    class GatewayController {
+        +routeRequest(request): Response
+        +authenticateRequest(request): boolean
+        +rateLimitCheck(client): boolean
+        +logRequest(request): void
+    }
+    
+    class SecurityFilter {
+        +validateJWT(token): boolean
+        +extractUser(token): User
+        +checkPermissions(user, endpoint): boolean
+    }
+}
+
+' =============================================
+' MICROSERVICIOS - CAPA DE NEGOCIO
+' =============================================
+
+package "Auth Service" {
+    class AuthController {
+        +login(credentials): TokenResponse
+        +logout(token): void
+        +validateToken(token): boolean
+        +refreshToken(refreshToken): TokenResponse
+        +resetPassword(email): void
+    }
+    
+    class AuthService {
+        +authenticateUser(usuario, password): User
+        +generateTokens(user): TokenPair
+        +validateToken(token): boolean
+        +invalidateToken(token): void
+    }
+    
+    class JwtTokenProvider {
+        +generateToken(user, claims): String
+        +validateToken(token): boolean
+        +extractClaims(token): Claims
+        +refreshToken(refreshToken): String
+    }
+}
+
+package "Usuarios Service" {
+    class UsuarioController {
+        +createUsuario(usuarioDTO): UsuarioDTO
+        +updateUsuario(id, usuarioDTO): UsuarioDTO
+        +getUsuario(id): UsuarioDTO
+        +deleteUsuario(id): void
+        +searchUsuarios(text): Page<UsuarioDTO>
+    }
+    
+    class UsuarioService {
+        +crearUsuario(usuarioDTO): UsuarioDTO
+        +actualizarUsuario(id, usuarioDTO): UsuarioDTO
+        +obtenerUsuario(id): UsuarioDTO
+        +eliminarUsuario(id): void
+        +cambiarEstado(id, estado): void
+    }
+    
+    class UsuarioRepository {
+        +findById(id): Optional<Usuario>
+        +save(usuario): Usuario
+        +deleteById(id): void
+        +findByUsuarioOrEmail(usuarioOrEmail): Optional<Usuario>
+        +findAll(): List<Usuario>
+    }
+}
+
+package "Servicios Service" {
+    class ServicioController {
+        +createServicio(servicioDTO): ServicioDTO
+        +updateServicio(id, servicioDTO): ServicioDTO
+        +getServicio(id): ServicioDTO
+        +deleteServicio(id): void
+        +searchServicios(criteria): Page<ServicioDTO>
+        +getServiciosPopulares(): List<ServicioDTO>
+        +checkDisponibilidad(id, fechas): boolean
+    }
+    
+    class ServicioService {
+        +crearServicio(servicioDTO): ServicioDTO
+        +actualizarServicio(id, servicioDTO): ServicioDTO
+        +obtenerServicio(id): ServicioDTO
+        +eliminarServicio(id): void
+        +buscarServicios(criteria): Page<ServicioDTO>
+        +verificarDisponibilidad(id, fechas, personas): boolean
+    }
+    
+    class ServicioRepository {
+        +findById(id): Optional<Servicio>
+        +save(servicio): Servicio
+        +deleteById(id): void
+        +findByTipoServicio(tipo): List<Servicio>
+        +findDisponibles(fechaInicio, fechaFin): List<Servicio>
+    }
+}
+
+package "Reservas Service" {
+    class ReservaController {
+        +createReserva(reservaDTO): ReservaDTO
+        +updateReserva(id, reservaDTO): ReservaDTO
+        +getReserva(id): ReservaDTO
+        +cancelReserva(id, motivo): void
+        +confirmReserva(id): void
+        +getReservasByCliente(idCliente): List<ReservaDTO>
+    }
+    
+    class ReservaService {
+        +crearReserva(reservaDTO): ReservaDTO
+        +actualizarReserva(id, reservaDTO): ReservaDTO
+        +obtenerReserva(id): ReservaDTO
+        +cancelarReserva(id, motivo): void
+        +confirmarReserva(id): void
+        +generarCodigoReserva(): String
+    }
+    
+    class ReservaRepository {
+        +findById(id): Optional<Reserva>
+        +save(reserva): Reserva
+        +deleteById(id): void
+        +findByCodigoReserva(codigo): Optional<Reserva>
+        +findByIdCliente(idCliente): List<Reserva>
+    }
+}
+
+package "Pagos Service" {
+    class PagoController {
+        +createPago(pagoDTO): PagoDTO
+        +procesarPago(id, metodoPago): PagoDTO
+        +reembolsarPago(id, motivo): PagoDTO
+        +getPagosByReserva(idReserva): List<PagoDTO>
+    }
+    
+    class PagoService {
+        +crearPago(pagoDTO): PagoDTO
+        +procesarPago(id, metodoPago, datos): PagoDTO
+        +reembolsarPago(id, motivo): PagoDTO
+        +validarPago(datos): boolean
+        +generarReferencia(): String
+    }
+    
+    class PagoRepository {
+        +findById(id): Optional<Pago>
+        +save(pago): Pago
+        +deleteById(id): void
+        +findByIdReserva(idReserva): List<Pago>
+    }
+}
+
+package "Reportes Service" {
+    class ReporteController {
+        +generarReporteIngresos(fechaInicio, fechaFin): ReporteDTO
+        +generarReporteOcupacion(fechaInicio, fechaFin): ReporteDTO
+        +generarReporteServicios(fechaInicio, fechaFin): ReporteDTO
+        +exportarPDF(tipo, parametros): byte[]
+    }
+    
+    class ReporteService {
+        +generarReporteIngresos(fechaInicio, fechaFin): ReporteData
+        +generarReporteOcupacion(fechaInicio, fechaFin): ReporteData
+        +generarReporteServicios(fechaInicio, fechaFin): ReporteData
+        +exportarPDF(data): byte[]
+    }
+}
+
+' =============================================
+' COMUNICACIÓN DISTRIBUIDA
+' =============================================
+class MensajeDistribuido {
+    +idMensaje: String
+    +tipoMensaje: String
+    +operacion: String
+    +servicioOrigen: String
+    +servicioDestino: String
+    +payload: Map<String, Object>
+    +timestamp: LocalDateTime
+    +correlacionId: String
+    +timeout: Long
+    +prioridad: String
+}
+
+class ClienteComunicacion {
+    +enviarMensaje(mensaje): MensajeDistribuido
+    +enviarMensajeAsincrono(mensaje): CompletableFuture<MensajeDistribuido>
+    +publicarEvento(evento, datos): void
+}
+
+' =============================================
+' ENTIDADES DE BASE DE DATOS
+' =============================================
+package "Database Entities" {
+    class Usuario {
+        +idUsuario: Long
+        +usuario: String
+        +email: String
+        +password: String
+        +nombreCompleto: String
+        +idRol: Long
+        +estado: String
+        +createdAt: LocalDateTime
+        +updatedAt: LocalDateTime
+    }
+    
+    class Rol {
+        +idRol: Long
+        +nombreRol: String
+        +descripcion: String
+        +estado: String
+    }
+    
+    class Servicio {
+        +idServicio: Long
+        +nombreServicio: String
+        +descripcion: String
+        +tipoServicio: String
+        +precioBase: BigDecimal
+        +duracionHoras: BigDecimal
+        +capacidadMaxima: Integer
+        +ubicacion: String
+        +estado: String
+    }
+    
+    class Reserva {
+        +idReserva: Long
+        +codigoReserva: String
+        +idCliente: Long
+        +idServicio: Long
+        +fechaReserva: LocalDateTime
+        +fechaInicioServicio: LocalDateTime
+        +fechaFinServicio: LocalDateTime
+        +cantidadPersonas: Integer
+        +precioTotal: BigDecimal
+        +estadoReserva: String
+    }
+    
+    class Pago {
+        +idPago: Long
+        +idReserva: Long
+        +monto: BigDecimal
+        +moneda: String
+        +metodoPago: String
+        +referencia: String
+        +estado: String
+        +fechaPago: LocalDateTime
+    }
+}
+
+' =============================================
+' BASE DE DATOS
+' =============================================
+database "MySQL Database" {
+    [hermosa_cartagena]
+    [roles]
+    [usuarios]
+    [servicios]
+    [reservas]
+    [pagos]
+    [configuracion_sistema]
+    [historial_operaciones]
+}
+
+' =============================================
+' RELACIONES ENTRE CAPAS
+' =============================================
+
+' Frontend -> API Gateway
+CLIENTE --> LoginController : login()
+CLIENTE --> ServicioController : searchServicios()
+CLIENTE --> ReservaController : createReserva()
+
+EMPLEADO --> DashboardController : loadDashboard()
+EMPLEADO --> ReservaController : getReservasByCliente()
+
+ADMIN --> UsuarioController : createUsuario()
+ADMIN --> ServicioController : createServicio()
+ADMIN --> ReporteController : generarReporteIngresos()
+
+' API Gateway -> Microservicios
+GatewayController --> AuthController : authenticateRequest()
+GatewayController --> UsuarioController : routeRequest()
+GatewayController --> ServicioController : routeRequest()
+GatewayController --> ReservaController : routeRequest()
+GatewayController --> PagoController : routeRequest()
+GatewayController --> ReporteController : routeRequest()
+
+' Microservicios -> Repositories
+UsuarioService --> UsuarioRepository : save()
+ServicioService --> ServicioRepository : findById()
+ReservaService --> ReservaRepository : save()
+PagoService --> PagoRepository : save()
+
+' Repositories -> Database
+UsuarioRepository --> [usuarios] : CRUD operations
+ServicioRepository --> [servicios] : CRUD operations
+ReservaRepository --> [reservas] : CRUD operations
+PagoRepository --> [pagos] : CRUD operations
+
+' Comunicación entre microservicios
+AuthService --> MensajeDistribuido : create()
+UsuarioService --> ClienteComunicacion : enviarMensaje()
+ServicioService --> ClienteComunicacion : enviarMensaje()
+ReservaService --> ClienteComunicacion : enviarMensaje()
+
+' Relaciones entre entidades
+Usuario "1" -- "1" Rol : belongsTo
+Usuario "1" -- "0..*" Reserva : hasMany
+Servicio "1" -- "0..*" Reserva : hasMany
+Reserva "1" -- "1..*" Pago : hasMany
+Rol "1" -- "0..*" Usuario : hasMany
+
+' =============================================
+' NOTAS ADICIONALES
+' =============================================
+
+note right of MensajeDistribuido
+  Protocolo de comunicación
+  entre microservicios
+  con soporte para:
+  - Request/Response
+  - Eventos
+  - Reintentos
+  - Timeouts
+end note
+
+note top of GatewayController
+  Punto único de entrada
+  con:
+  - Autenticación JWT
+  - Rate limiting
+  - Load balancing
+  - Circuit breakers
+end note
+
+note bottom of Database
+  MySQL 8.0 con:
+  - JPA/Hibernate ORM
+  - Auditoría automática
+  - Índices optimizados
+  - Relaciones completas
+end note
+
+@enduml
