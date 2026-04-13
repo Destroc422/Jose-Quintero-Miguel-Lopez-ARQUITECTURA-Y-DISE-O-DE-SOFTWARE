@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="HermosaCartagena" default="compile" basedir=".">
+
+    <!-- =============================================
+         PROPIEDADES DEL PROYECTO
+         ============================================= -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="main.class" value="com.hermosacartagena.server.ServidorServicios"/>
+    <property name="client.class" value="com.hermosacartagena.client.ClienteServicios"/>
+    
+    <!-- Versión de Java -->
+    <property name="java.version" value="11"/>
+    
+    <!-- Classpath -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <!-- =============================================
+         LIMPIEZA DEL PROYECTO
+         ============================================= -->
+    <target name="clean" description="Limpia los directorios de compilación">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <!-- =============================================
+         INICIALIZACIÓN DE DIRECTORIOS
+         ============================================= -->
+    <target name="init" depends="clean" description="Crea los directorios necesarios">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${lib.dir}"/>
+    </target>
+
+    <!-- =============================================
+         COMPILACIÓN DEL CÓDIGO FUENTE
+         ============================================= -->
+    <target name="compile" depends="init" description="Compila el código fuente">
+        <echo message="Compilando código fuente..."/>
+        
+        <javac srcdir="${src.dir}"
+               destdir="${build.dir}"
+               includeantruntime="false"
+               source="${java.version}"
+               target="${java.version}"
+               encoding="UTF-8"
+               debug="true">
+            <classpath refid="classpath"/>
+        </javac>
+        
+        <echo message="Compilación completada."/>
+    </target>
+
+    <!-- =============================================
+         CREACIÓN DEL JAR DEL SERVIDOR
+         ============================================= -->
+    <target name="jar-server" depends="compile" description="Crea el JAR del servidor">
+        <echo message="Creando JAR del servidor..."/>
+        
+        <jar destfile="${dist.dir}/ServidorServicios.jar" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Implementation-Title" value="Servidor de Servicios Turísticos"/>
+                <attribute name="Implementation-Version" value="1.0"/>
+                <attribute name="Implementation-Vendor" value="Hermosa Cartagena"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+        </jar>
+        
+        <echo message="JAR del servidor creado: ${dist.dir}/ServidorServicios.jar"/>
+    </target>
+
+    <!-- =============================================
+         CREACIÓN DEL JAR DEL CLIENTE
+         ============================================= -->
+    <target name="jar-client" depends="compile" description="Crea el JAR del cliente">
+        <echo message="Creando JAR del cliente..."/>
+        
+        <jar destfile="${dist.dir}/ClienteServicios.jar" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${client.class}"/>
+                <attribute name="Implementation-Title" value="Cliente de Servicios Turísticos"/>
+                <attribute name="Implementation-Version" value="1.0"/>
+                <attribute name="Implementation-Vendor" value="Hermosa Cartagena"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+        </jar>
+        
+        <echo message="JAR del cliente creado: ${dist.dir}/ClienteServicios.jar"/>
+    </target>
+
+    <!-- =============================================
+         CREACIÓN DE TODOS LOS JARs
+         ============================================= -->
+    <target name="jar" depends="jar-server, jar-client" description="Crea todos los JARs">
+        <echo message="Todos los JARs creados exitosamente."/>
+    </target>
+
+    <!-- =============================================
+         EJECUCIÓN DEL SERVIDOR
+         ============================================= -->
+    <target name="run-server" depends="compile" description="Ejecuta el servidor">
+        <echo message="Iniciando servidor de servicios..."/>
+        
+        <java classname="${main.class}" 
+              classpath="${build.dir}"
+              fork="true"
+              spawn="true">
+            <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
+            <jvmarg value="-Djava.security.policy=server.policy"/>
+            <arg value=""/>
+        </java>
+        
+        <echo message="Servidor iniciado en segundo plano."/>
+    </target>
+
+    <!-- =============================================
+         EJECUCIÓN DEL CLIENTE
+         ============================================= -->
+    <target name="run-client" depends="compile" description="Ejecuta el cliente">
+        <echo message="Iniciando cliente de servicios..."/>
+        
+        <java classname="${client.class}" 
+              classpath="${build.dir}"
+              fork="true">
+            <jvmarg value="-Djava.security.policy=client.policy"/>
+        </java>
+    </target>
+
+    <!-- =============================================
+         GENERACIÓN DE JAVADOC
+         ============================================= -->
+    <target name="javadoc" description="Genera la documentación Javadoc">
+        <echo message="Generando documentación Javadoc..."/>
+        
+        <javadoc sourcepath="${src.dir}"
+                 destdir="${dist.dir}/javadoc"
+                 packagenames="com.hermosacartagena.*"
+                 charset="UTF-8"
+                 encoding="UTF-8"
+                 docencoding="UTF-8"
+                 author="true"
+                 version="true"
+                 use="true"
+                 windowtitle="Sistema de Gestión Turística - API Documentation"
+                 doctitle="Sistema de Gestión Turística Hermosa Cartagena">
+            <classpath refid="classpath"/>
+        </javadoc>
+        
+        <echo message="Documentación Javadoc generada en: ${dist.dir}/javadoc"/>
+    </target>
+
+    <!-- =============================================
+         CREACIÓN DE ARCHIVOS DE POLÍTICAS DE SEGURIDAD
+         ============================================= -->
+    <target name="create-policies" description="Crea archivos de políticas de seguridad">
+        <echo message="Creando políticas de seguridad..."/>
+        
+        <!-- Política del servidor -->
+        <echo file="${dist.dir}/server.policy">
+grant {
+    permission java.net.SocketPermission "localhost:1024-", "listen,accept";
+    permission java.io.FilePermission "<<ALL FILES>>", "read,write,delete";
+    permission java.lang.RuntimePermission "createClassLoader";
+    permission java.lang.RuntimePermission "getClassLoader";
+    permission java.rmi.RMISecurityManager;
+};
+        </echo>
+        
+        <!-- Política del cliente -->
+        <echo file="${dist.dir}/client.policy">
+grant {
+    permission java.net.SocketPermission "localhost:1024-", "connect,resolve";
+    permission java.lang.RuntimePermission "createClassLoader";
+    permission java.lang.RuntimePermission "getClassLoader";
+    permission java.rmi.RMISecurityManager;
+};
+        </echo>
+        
+        <echo message="Políticas de seguridad creadas."/>
+    </target>
+
+    <!-- =============================================
+         DESCARGA DE DEPENDENCIAS
+         ============================================= -->
+    <target name="download-deps" description="Descarga las dependencias necesarias">
+        <echo message="Descargando dependencias..."/>
+        
+        <!-- Nota: En un proyecto real, usaríamos Maven o Gradle para gestionar dependencias -->
+        <!-- Por ahora, asumimos que el driver MySQL está en el classpath -->
+        
+        <echo message="Asegúrese de tener el driver MySQL JDBC en el classpath."/>
+        <echo message="Puede descargarlo desde: https://dev.mysql.com/downloads/connector/j/"/>
+    </target>
+
+    <!-- =============================================
+         VERIFICACIÓN DE ENTORNO
+         ============================================= -->
+    <target name="check-env" description="Verifica el entorno de desarrollo">
+        <echo message="Verificando entorno..."/>
+        
+        <!-- Verificar versión de Java -->
+        <condition property="java.version.correct">
+            <contains string="${java.version}" substring="11"/>
+        </condition>
+        
+        <fail unless="java.version.correct" 
+               message="Se requiere Java 11 o superior. Versión actual: ${java.version}"/>
+        
+        <!-- Verificar directorios -->
+        <available file="${src.dir}" type="dir" property="src.exists"/>
+        <fail unless="src.exists" message="Directorio src no encontrado: ${src.dir}"/>
+        
+        <echo message="Entorno verificado correctamente."/>
+        <echo message="Java versión: ${java.version}"/>
+        <echo message="Directorio src: ${src.dir}"/>
+    </target>
+
+    <!-- =============================================
+         COMPILACIÓN CON DEPURACIÓN
+         ============================================= -->
+    <target name="compile-debug" depends="init" description="Compila con información de depuración">
+        <echo message="Compilando con información de depuración..."/>
+        
+        <javac srcdir="${src.dir}"
+               destdir="${build.dir}"
+               includeantruntime="false"
+               source="${java.version}"
+               target="${java.version}"
+               encoding="UTF-8"
+               debug="true"
+               debuglevel="lines,vars,source">
+            <classpath refid="classpath"/>
+        </javac>
+        
+        <echo message="Compilación con depuración completada."/>
+    </target>
+
+    <!-- =============================================
+         EJECUCIÓN CON DEPURACIÓN
+         ============================================= -->
+    <target name="debug-server" depends="compile-debug" description="Ejecuta el servidor en modo depuración">
+        <echo message="Iniciando servidor en modo depuración..."/>
+        
+        <java classname="${main.class}" 
+              classpath="${build.dir}"
+              fork="true"
+              jvm="java">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>
+            <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
+            <jvmarg value="-Djava.security.policy=server.policy"/>
+        </java>
+    </target>
+
+    <!-- =============================================
+         EMPAQUETADO COMPLETO
+         ============================================= -->
+    <target name="package" depends="jar,javadoc,create-policies" description="Crea un paquete completo">
+        <echo message="Creando paquete completo..."/>
+        
+        <!-- Crear ZIP con todos los archivos -->
+        <zip destfile="${dist.dir}/HermosaCartagena-Distributed.zip">
+            <fileset dir="${dist.dir}" includes="*.jar,*.policy"/>
+            <fileset dir="${dist.dir}" includes="javadoc/**"/>
+            <fileset dir="." includes="README.md,build.xml"/>
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </zip>
+        
+        <echo message="Paquete completo creado: ${dist.dir}/HermosaCartagena-Distributed.zip"/>
+    </target>
+
+    <!-- =============================================
+         LIMPIEZA Y RECONSTRUCCIÓN COMPLETA
+         ============================================= -->
+    <target name="rebuild" depends="clean,compile,jar" description="Limpia y reconstruye todo">
+        <echo message="Reconstrucción completada."/>
+    </target>
+
+    <!-- =============================================
+         INFORMACIÓN DEL PROYECTO
+         ============================================= -->
+    <target name="info" description="Muestra información del proyecto">
+        <echo message="=== SISTEMA DE GESTIÓN TURÍSTICA HERMOSA CARTAGENA ==="/>
+        <echo message="Versión: 1.0"/>
+        <echo message="Java requerido: ${java.version}+"/>
+        <echo message="Directorio fuente: ${src.dir}"/>
+        <echo message="Directorio compilación: ${build.dir}"/>
+        <echo message="Directorio distribución: ${dist.dir}"/>
+        <echo message="Clase principal servidor: ${main.class}"/>
+        <echo message="Clase principal cliente: ${client.class}"/>
+        <echo message=""/>
+        <echo message="Comandos disponibles:"/>
+        <echo message="  ant compile          - Compila el código fuente"/>
+        <echo message="  ant jar-server       - Crea JAR del servidor"/>
+        <echo message="  ant jar-client       - Crea JAR del cliente"/>
+        <echo message="  ant jar              - Crea todos los JARs"/>
+        <echo message="  ant run-server       - Ejecuta el servidor"/>
+        <echo message="  ant run-client       - Ejecuta el cliente"/>
+        <echo message="  ant debug-server     - Ejecuta servidor en modo depuración"/>
+        <echo message="  ant javadoc          - Genera documentación"/>
+        <echo message="  ant package          - Crea paquete completo"/>
+        <echo message="  ant clean            - Limpia directorios"/>
+        <echo message="  ant rebuild          - Limpia y reconstruye"/>
+    </target>
+
+    <!-- =============================================
+         TARGET POR DEFECTO
+         ============================================= -->
+    <target name="help" depends="info" description="Muestra ayuda"/>
+
+</project>
