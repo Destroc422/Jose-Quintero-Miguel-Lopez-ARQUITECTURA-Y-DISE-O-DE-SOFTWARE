@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hotel-system.com/protocol"
+           xmlns="http://hotel-system.com/protocol"
+           elementFormDefault="qualified">
+
+    <!-- Elemento raíz del protocolo -->
+    <xs:element name="protocol">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element ref="request"/>
+                <xs:element ref="response"/>
+                <xs:element ref="error"/>
+            </xs:choice>
+            <xs:attribute name="version" type="xs:string" use="required"/>
+            <xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Estructura de Solicitud -->
+    <xs:element name="request">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="operation"/>
+                <xs:element ref="parameters" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="client_id" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="operation">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="login"/>
+                <xs:enumeration value="register"/>
+                <xs:enumeration value="logout"/>
+                <xs:enumeration value="get_hotels"/>
+                <xs:enumeration value="get_rooms"/>
+                <xs:enumeration value="book_room"/>
+                <xs:enumeration value="cancel_booking"/>
+                <xs:enumeration value="get_user_data"/>
+                <xs:enumeration value="update_profile"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+
+    <xs:element name="parameters">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="parameter" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="parameter">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="type" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="string"/>
+                                <xs:enumeration value="integer"/>
+                                <xs:enumeration value="boolean"/>
+                                <xs:enumeration value="date"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Estructura de Respuesta -->
+    <xs:element name="response">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="status"/>
+                <xs:element ref="data" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="request_id" type="xs:string" use="required"/>
+            <xs:attribute name="server_id" type="xs:string" use="required"/>
+            <xs:attribute name="processing_time" type="xs:decimal" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="status">
+        <xs:simpleType>
+            <xs:restriction base="xs:integer">
+                <xs:enumeration value="200"/>
+                <xs:enumeration value="201"/>
+                <xs:enumeration value="400"/>
+                <xs:enumeration value="401"/>
+                <xs:enumeration value="403"/>
+                <xs:enumeration value="404"/>
+                <xs:enumeration value="500"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+
+    <xs:element name="data">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="user"/>
+                <xs:element ref="hotels"/>
+                <xs:element ref="rooms"/>
+                <xs:element ref="bookings"/>
+                <xs:element ref="message"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Estructura de Usuario -->
+    <xs:element name="user">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="id"/>
+                <xs:element ref="username"/>
+                <xs:element ref="email"/>
+                <xs:element ref="name"/>
+                <xs:element ref="role"/>
+                <xs:element ref="created_at"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Elementos básicos -->
+    <xs:element name="id" type="xs:string"/>
+    <xs:element name="username" type="xs:string"/>
+    <xs:element name="email" type="xs:string"/>
+    <xs:element name="name" type="xs:string"/>
+    <xs:element name="role" type="xs:string"/>
+    <xs:element name="created_at" type="xs:dateTime"/>
+
+    <!-- Estructura de Hoteles -->
+    <xs:element name="hotels">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="hotel" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="hotel">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="id"/>
+                <xs:element ref="name"/>
+                <xs:element ref="description"/>
+                <xs:element ref="location"/>
+                <xs:element ref="rating"/>
+                <xs:element ref="rooms"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="description" type="xs:string"/>
+    <xs:element name="location" type="xs:string"/>
+    <xs:element name="rating" type="xs:decimal"/>
+
+    <!-- Estructura de Habitaciones -->
+    <xs:element name="rooms">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="room" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="room">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="id"/>
+                <xs:element ref="number"/>
+                <xs:element ref="type"/>
+                <xs:element ref="capacity"/>
+                <xs:element ref="price_per_night"/>
+                <xs:element ref="available"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="number" type="xs:string"/>
+    <xs:element name="type" type="xs:string"/>
+    <xs:element name="capacity" type="xs:integer"/>
+    <xs:element name="price_per_night" type="xs:decimal"/>
+    <xs:element name="available" type="xs:boolean"/>
+
+    <!-- Estructura de Reservas -->
+    <xs:element name="bookings">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="booking" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="booking">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="id"/>
+                <xs:element ref="user_id"/>
+                <xs:element ref="room_id"/>
+                <xs:element ref="check_in"/>
+                <xs:element ref="check_out"/>
+                <xs:element ref="total_price"/>
+                <xs:element ref="status"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="user_id" type="xs:string"/>
+    <xs:element name="room_id" type="xs:string"/>
+    <xs:element name="check_in" type="xs:date"/>
+    <xs:element name="check_out" type="xs:date"/>
+    <xs:element name="total_price" type="xs:decimal"/>
+    <xs:element name="status" type="xs:string"/>
+
+    <!-- Estructura de Mensaje -->
+    <xs:element name="message" type="xs:string"/>
+
+    <!-- Estructura de Error -->
+    <xs:element name="error">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="code"/>
+                <xs:element ref="message"/>
+                <xs:element ref="details" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="request_id" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="code" type="xs:integer"/>
+    <xs:element name="details">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="detail" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="detail">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="field" type="xs:string" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

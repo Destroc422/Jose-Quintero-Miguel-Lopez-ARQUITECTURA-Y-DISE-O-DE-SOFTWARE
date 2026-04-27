@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE protocol SYSTEM "../protocol.dtd">
+<protocol version="1.0" timestamp="2026-04-27T14:30:02Z">
+    <response request_id="req_001" server_id="hotel_server_001" processing_time="0.125">
+        <status>200</status>
+        <data>
+            <user>
+                <id>123</id>
+                <username>jquintero</username>
+                <email>jquintero@hotel.com</email>
+                <name>Jose Quintero</name>
+                <role>admin</role>
+                <created_at>2026-01-15T10:30:00Z</created_at>
+            </user>
+            <message>Login exitoso</message>
+        </data>
+    </response>
+</protocol>

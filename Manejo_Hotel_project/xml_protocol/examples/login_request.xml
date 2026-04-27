@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE protocol SYSTEM "../protocol.dtd">
+<protocol version="1.0" timestamp="2026-04-27T14:30:00Z">
+    <request id="req_001" client_id="web_client_001">
+        <operation>login</operation>
+        <parameters>
+            <parameter name="username" type="string">jquintero</parameter>
+            <parameter name="password" type="string">password123</parameter>
+            <parameter name="remember" type="boolean">true</parameter>
+        </parameters>
+    </request>
+</protocol>

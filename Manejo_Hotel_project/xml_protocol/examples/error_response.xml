@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE protocol SYSTEM "../protocol.dtd">
+<protocol version="1.0" timestamp="2026-04-27T14:30:02Z">
+    <error request_id="req_001">
+        <code>401</code>
+        <message>Credenciales inválidas</message>
+        <details>
+            <detail field="username">El usuario no existe o la contraseña es incorrecta</detail>
+            <detail field="attempts">Quedan 2 intentos antes de bloquear la cuenta</detail>
+        </details>
+    </error>
+</protocol>

@@ -1,0 +1,81 @@
+<!-- DTD para Protocolo de Comunicación XML - Sistema Hotelero -->
+<!-- Define la estructura para solicitudes, respuestas y errores -->
+
+<!ELEMENT protocol (request | response | error)>
+<!ATTLIST protocol
+    version CDATA #REQUIRED
+    timestamp CDATA #REQUIRED>
+
+<!-- Estructura de Solicitud -->
+<!ELEMENT request (operation, parameters?)>
+<!ATTLIST request
+    id CDATA #REQUIRED
+    client_id CDATA #REQUIRED>
+
+<!ELEMENT operation (#PCDATA)>
+<!ATTLIST operation
+    type (login | register | logout | get_hotels | get_rooms | book_room | cancel_booking | get_user_data | update_profile) #REQUIRED>
+
+<!ELEMENT parameters (parameter+)>
+<!ELEMENT parameter (#PCDATA)>
+<!ATTLIST parameter
+    name CDATA #REQUIRED
+    type (string | integer | boolean | date) #IMPLIED>
+
+<!-- Estructura de Respuesta -->
+<!ELEMENT response (status, data?)>
+<!ATTLIST response
+    request_id CDATA #REQUIRED
+    server_id CDATA #REQUIRED
+    processing_time CDATA #IMPLIED>
+
+<!ELEMENT status (#PCDATA)>
+<!ATTLIST status
+    code (200 | 201 | 400 | 401 | 403 | 404 | 500) #REQUIRED>
+
+<!ELEMENT data (user | hotels | rooms | bookings | message)*>
+
+<!-- Estructura de Usuario -->
+<!ELEMENT user (id, username, email, name, role, created_at)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT username (#PCDATA)>
+<!ELEMENT email (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT role (#PCDATA)>
+<!ELEMENT created_at (#PCDATA)>
+
+<!-- Estructura de Hoteles -->
+<!ELEMENT hotels (hotel+)>
+<!ELEMENT hotel (id, name, description, location, rating, rooms)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT location (#PCDATA)>
+<!ELEMENT rating (#PCDATA)>
+
+<!-- Estructura de Habitaciones -->
+<!ELEMENT rooms (room+)>
+<!ELEMENT room (id, number, type, capacity, price_per_night, available)>
+<!ELEMENT number (#PCDATA)>
+<!ELEMENT type (#PCDATA)>
+<!ELEMENT capacity (#PCDATA)>
+<!ELEMENT price_per_night (#PCDATA)>
+<!ELEMENT available (#PCDATA)>
+
+<!-- Estructura de Reservas -->
+<!ELEMENT bookings (booking+)>
+<!ELEMENT booking (id, user_id, room_id, check_in, check_out, total_price, status)>
+<!ELEMENT check_in (#PCDATA)>
+<!ELEMENT check_out (#PCDATA)>
+<!ELEMENT total_price (#PCDATA)>
+
+<!-- Estructura de Mensaje -->
+<!ELEMENT message (#PCDATA)>
+
+<!-- Estructura de Error -->
+<!ELEMENT error (code, message, details?)>
+<!ATTLIST error
+    request_id CDATA #IMPLIED>
+
+<!ELEMENT details (detail+)>
+<!ELEMENT detail (#PCDATA)>
+<!ATTLIST detail
+    field CDATA #IMPLIED>
