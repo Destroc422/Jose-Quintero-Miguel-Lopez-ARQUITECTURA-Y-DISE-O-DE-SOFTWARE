@@ -243,20 +243,7 @@ public class UsuarioService {
         return convertirADTO(usuarioActualizado);
     }
 
-    /**
-     * Reinicia intentos fallidos de un usuario
-     * 
-     * @param id ID del usuario
-     */
-    public void reiniciarIntentosFallidos(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
-        }
-
-        usuarioRepository.reiniciarIntentosFallidos(id);
-        log.info("Intentos fallidos reiniciados para usuario: {}", id);
-    }
-
+    
     /**
      * Bloquea cuenta de usuario
      * 
@@ -309,6 +296,44 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Object[] obtenerEstadisticas() {
         return usuarioRepository.obtenerEstadisticasGenerales();
+    }
+
+    /**
+     * Incrementa el contador de intentos fallidos de login
+     * 
+     * @param idUsuario ID del usuario
+     */
+    @Transactional
+    public void incrementarIntentosFallidos(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", idUsuario));
+        
+        int intentosActuales = usuario.getIntentosFallidos() != null ? usuario.getIntentosFallidos() : 0;
+        usuario.setIntentosFallidos(intentosActuales + 1);
+        
+        // Bloquear cuenta después de 5 intentos fallidos
+        if (usuario.getIntentosFallidos() >= 5) {
+            usuario.setEstado("bloqueado");
+            log.warn("Usuario bloqueado por exceder intentos fallidos: {}", idUsuario);
+        }
+        
+        usuarioRepository.save(usuario);
+        log.info("Incrementados intentos fallidos para usuario {}: {}", idUsuario, usuario.getIntentosFallidos());
+    }
+
+    /**
+     * Reinicia intentos fallidos del usuario (usado en login exitoso)
+     * 
+     * @param idUsuario ID del usuario
+     */
+    @Transactional
+    public void reiniciarIntentosFallidos(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", idUsuario));
+        
+        usuario.setIntentosFallidos(0);
+        usuarioRepository.save(usuario);
+        log.debug("Reiniciados intentos fallidos para usuario: {}", idUsuario);
     }
 
     /**

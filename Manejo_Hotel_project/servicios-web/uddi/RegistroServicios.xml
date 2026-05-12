@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uddi:registry xmlns:uddi="urn:uddi-org:api_v2"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <!-- =============================================
+         REGISTRO DE SERVICIOS HERMOSA CARTAGENA
+         ============================================= -->
+    
+    <!-- Business Entity - Hotel Hermosa Cartagena -->
+    <uddi:businessEntity businessKey="hermosa-cartagena-hotel">
+        <uddi:name>Hermosa Cartagena Hotel</uddi:name>
+        <uddi:description>
+            Sistema de Gestión Turística Completo - Servicios Web SOAP
+        </uddi:description>
+        <uddi:contact>
+            <uddi:personName>Administración del Hotel</uddi:personName>
+            <uddi:useType>administrative</uddi:useType>
+            <uddi:email>admin@hermosacartagena.com</uddi:email>
+            <uddi:phone>+57 5 6641234</uddi:phone>
+        </uddi:contact>
+        <uddi:businessServices>
+            
+            <!-- Servicio Principal de Gestión Hotelera -->
+            <uddi:businessService serviceKey="hotel-management-service">
+                <uddi:name>Sistema de Gestión Hotelera</uddi:name>
+                <uddi:description>
+                    Servicio principal para gestión de clientes, habitaciones, reservas y servicios
+                </uddi:description>
+                <uddi:bindingTemplates>
+                    <uddi:bindingTemplate bindingKey="soap-binding-1">
+                        <uddi:description>SOAP over HTTP - Endpoint Principal</uddi:description>
+                        <uddi:accessPoint useType="wsdlDeployment">
+                            http://localhost:8080/hermosacartagena/ws
+                        </uddi:accessPoint>
+                        <uddi:tModelInstanceDetails>
+                            <uddi:tModelInstanceInfo tModelKey="soap-wsdl">
+                                <uddi:instanceDetails>
+                                    <uddi:instanceParms>WSDL Location: http://localhost:8080/hermosacartagena/ws?wsdl</uddi:instanceParms>
+                                </uddi:instanceDetails>
+                            </uddi:tModelInstanceInfo>
+                        </uddi:tModelInstanceDetails>
+                    </uddi:bindingTemplate>
+                    
+                    <uddi:bindingTemplate bindingKey="soap-binding-2">
+                        <uddi:description>SOAP over HTTPS - Endpoint Seguro</uddi:description>
+                        <uddi:accessPoint useType="wsdlDeployment">
+                            https://api.hermosacartagena.com/ws
+                        </uddi:accessPoint>
+                        <uddi:tModelInstanceDetails>
+                            <uddi:tModelInstanceInfo tModelKey="soap-wsdl-secure">
+                                <uddi:instanceDetails>
+                                    <uddi:instanceParms>WSDL Location: https://api.hermosacartagena.com/ws?wsdl</uddi:instanceParms>
+                                </uddi:instanceDetails>
+                            </uddi:tModelInstanceInfo>
+                        </uddi:tModelInstanceDetails>
+                    </uddi:bindingTemplate>
+                </uddi:bindingTemplates>
+                
+                <!-- Categorías del Servicio -->
+                <uddi:categoryBag>
+                    <uddi:keyedReference tModelKey="uddi-org:types" keyName="businessService" keyValue=""/>
+                    <uddi:keyedReference tModelKey="hotel-services" keyName="hotel-management" keyValue="hotel"/>
+                    <uddi:keyedReference tModelKey="protocol-types" keyName="soap" keyValue="soap"/>
+                    <uddi:keyedReference tModelKey="industry-types" keyName="hospitality" keyValue="tourism"/>
+                </uddi:categoryBag>
+            </uddi:businessService>
+            
+            <!-- Servicio de Reservas Especializado -->
+            <uddi:businessService serviceKey="reservation-service">
+                <uddi:name>Servicio de Reservas</uddi:name>
+                <uddi:description>
+                    Servicio especializado para gestión de reservas y disponibilidad
+                </uddi:description>
+                <uddi:bindingTemplates>
+                    <uddi:bindingTemplate bindingKey="reservation-binding">
+                        <uddi:description>SOAP Reservations Endpoint</uddi:description>
+                        <uddi:accessPoint useType="wsdlDeployment">
+                            http://localhost:8080/hermosacartagena/reservations
+                        </uddi:accessPoint>
+                        <uddi:tModelInstanceDetails>
+                            <uddi:tModelInstanceInfo tModelKey="soap-wsdl">
+                                <uddi:instanceDetails>
+                                    <uddi:instanceParms>WSDL: http://localhost:8080/hermosacartagena/reservations?wsdl</uddi:instanceParms>
+                                </uddi:instanceDetails>
+                            </uddi:tModelInstanceInfo>
+                        </uddi:tModelInstanceDetails>
+                    </uddi:bindingTemplate>
+                </uddi:bindingTemplates>
+                
+                <uddi:categoryBag>
+                    <uddi:keyedReference tModelKey="uddi-org:types" keyName="businessService" keyValue=""/>
+                    <uddi:keyedReference tModelKey="hotel-services" keyName="reservations" keyValue="booking"/>
+                    <uddi:keyedReference tModelKey="protocol-types" keyName="soap" keyValue="soap"/>
+                </uddi:categoryBag>
+            </uddi:businessService>
+            
+            <!-- Servicio de Consultas y Catálogos -->
+            <uddi:businessService serviceKey="catalog-service">
+                <uddi:name>Servicio de Catálogos</uddi:name>
+                <uddi:description>
+                    Servicio para consulta de habitaciones, servicios y tarifas
+                </uddi:description>
+                <uddi:bindingTemplates>
+                    <uddi:bindingTemplate bindingKey="catalog-binding">
+                        <uddi:description>SOAP Catalog Endpoint</uddi:description>
+                        <uddi:accessPoint useType="wsdlDeployment">
+                            http://localhost:8080/hermosacartagena/catalog
+                        </uddi:accessPoint>
+                        <uddi:tModelInstanceDetails>
+                            <uddi:tModelInstanceInfo tModelKey="soap-wsdl">
+                                <uddi:instanceDetails>
+                                    <uddi:instanceParms>WSDL: http://localhost:8080/hermosacartagena/catalog?wsdl</uddi:instanceParms>
+                                </uddi:instanceDetails>
+                            </uddi:tModelInstanceInfo>
+                        </uddi:tModelInstanceDetails>
+                    </uddi:bindingTemplate>
+                </uddi:bindingTemplates>
+                
+                <uddi:categoryBag>
+                    <uddi:keyedReference tModelKey="uddi-org:types" keyName="businessService" keyValue=""/>
+                    <uddi:keyedReference tModelKey="hotel-services" keyName="catalog" keyValue="catalog"/>
+                    <uddi:keyedReference tModelKey="protocol-types" keyName="soap" keyValue="soap"/>
+                </uddi:categoryBag>
+            </uddi:businessService>
+            
+        </uddi:businessServices>
+    </uddi:businessEntity>
+    
+    <!-- =============================================
+         TMODELS - DEFINICIONES DE TIPOS DE SERVICIO
+         ============================================= -->
+    
+    <!-- TModel para SOAP WSDL -->
+    <uddi:tModel tModelKey="soap-wsdl">
+        <uddi:name>SOAP WSDL Service</uddi:name>
+        <uddi:description>
+            Servicio web basado en SOAP con contrato WSDL formal
+        </uddi:description>
+        <uddi:overviewDoc>
+            <uddi:overviewURL>
+                http://schemas.xmlsoap.org/wsdl/
+            </uddi:overviewURL>
+        </uddi:overviewDoc>
+        <uddi:categoryBag>
+            <uddi:keyedReference tModelKey="uddi-org:types" keyName="types" keyValue="wsdlSpec"/>
+        </uddi:categoryBag>
+    </uddi:tModel>
+    
+    <!-- TModel para SOAP WSDL Seguro -->
+    <uddi:tModel tModelKey="soap-wsdl-secure">
+        <uddi:name>Secure SOAP WSDL Service</uddi:name>
+        <uddi:description>
+            Servicio web SOAP seguro con HTTPS y autenticación
+        </uddi:description>
+        <uddi:overviewDoc>
+            <uddi:overviewURL>
+                http://schemas.xmlsoap.org/wsdl/soap/
+            </uddi:overviewURL>
+        </uddi:overviewDoc>
+        <uddi:categoryBag>
+            <uddi:keyedReference tModelKey="uddi-org:types" keyName="types" keyValue="wsdlSpec"/>
+            <uddi:keyedReference tModelKey="security-types" keyName="https" keyValue="secure"/>
+        </uddi:categoryBag>
+    </uddi:tModel>
+    
+    <!-- TModel para Servicios Hoteleros -->
+    <uddi:tModel tModelKey="hotel-services">
+        <uddi:name>Hotel Services Classification</uddi:name>
+        <uddi:description>
+            Clasificación estándar para servicios hoteleros
+        </uddi:description>
+        <uddi:categoryBag>
+            <uddi:keyedReference tModelKey="uddi-org:types" keyName="types" keyValue="categorization"/>
+        </uddi:categoryBag>
+    </uddi:tModel>
+    
+    <!-- TModel para Protocolos -->
+    <uddi:tModel tModelKey="protocol-types">
+        <uddi:name>Protocol Classification</uddi:name>
+        <uddi:description>
+            Clasificación de protocolos de comunicación
+        </uddi:description>
+        <uddi:categoryBag>
+            <uddi:keyedReference tModelKey="uddi-org:types" keyName="types" keyValue="categorization"/>
+        </uddi:categoryBag>
+    </uddi:tModel>
+    
+    <!-- TModel para Tipos de Industria -->
+    <uddi:tModel tModelKey="industry-types">
+        <uddi:name>Industry Classification</uddi:name>
+        <uddi:description>
+            Clasificación por tipo de industria
+        </uddi:description>
+        <uddi:categoryBag>
+            <uddi:keyedReference tModelKey="uddi-org:types" keyName="types" keyValue="categorization"/>
+        </uddi:categoryBag>
+    </uddi:tModel>
+    
+</uddi:registry>

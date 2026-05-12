@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Header>
+        <tns:RespuestaHeader>
+            <tns:codigoRespuesta>200</tns:codigoRespuesta>
+            <tns:tiempoProcesamiento>89</tns:tiempoProcesamiento>
+            <tns:timestamp>2026-05-11T14:40:01Z</tns:timestamp>
+        </tns:RespuestaHeader>
+    </soap:Header>
+    
+    <soap:Body>
+        <tns:listarHabitacionesDisponiblesResponse>
+            <tns:habitaciones>
+                <tns:Habitacion>
+                    <tns:idHabitacion>205</tns:idHabitacion>
+                    <tns:numero>205</tns:numero>
+                    <tns:tipo>Suite Deluxe</tns:tipo>
+                    <tns:capacidad>2</tns:capacidad>
+                    <tns:precioPorNoche>280.00</tns:precioPorNoche>
+                    <tns:estado>disponible</tns:estado>
+                    <tns:descripcion>Suite con vista al mar, king size, balcón privado</tns:descripcion>
+                </tns:Habitacion>
+                <tns:Habitacion>
+                    <tns:idHabitacion>306</tns:idHabitacion>
+                    <tns:numero>306</tns:numero>
+                    <tns:tipo>Junior Suite</tns:tipo>
+                    <tns:capacidad>2</tns:capacidad>
+                    <tns:precioPorNoche>195.00</tns:precioPorNoche>
+                    <tns:estado>disponible</tns:estado>
+                    <tns:descripcion>Habitación con vista parcial al mar, queen size</tns:descripcion>
+                </tns:Habitacion>
+                <tns:Habitacion>
+                    <tns:idHabitacion>412</tns:idHabitacion>
+                    <tns:numero>412</tns:numero>
+                    <tns:tipo>Doble Estándar</tns:tipo>
+                    <tns:capacidad>2</tns:capacidad>
+                    <tns:precioPorNoche>125.00</tns:precioPorNoche>
+                    <tns:estado>disponible</tns:estado>
+                    <tns:descripcion>Habitación estándar con dos camas dobles</tns:descripcion>
+                </tns:Habitacion>
+            </tns:habitaciones>
+        </tns:listarHabitacionesDisponiblesResponse>
+    </soap:Body>
+    
+</soap:Envelope>

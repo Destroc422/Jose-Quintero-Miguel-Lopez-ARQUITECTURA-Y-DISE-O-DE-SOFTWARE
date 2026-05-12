@@ -178,7 +178,7 @@ public class Cliente extends Auditoria {
         }
         return pagos.stream()
                 .filter(p -> p.getMonto() != null && "completado".equals(p.getEstado()))
-                .mapToDouble(Pago::getMonto)
+                .mapToDouble(p -> p.getMonto().doubleValue())
                 .sum();
     }
 

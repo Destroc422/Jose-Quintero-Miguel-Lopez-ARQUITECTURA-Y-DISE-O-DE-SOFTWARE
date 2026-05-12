@@ -1,5 +1,6 @@
 package com.hermosacartagena.dto;
 
+import com.hermosacartagena.entity.Usuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -178,5 +179,24 @@ public class UsuarioDTO {
 
         @Size(max = 500, message = "La dirección no debe exceder 500 caracteres")
         private String direccion;
+    }
+
+    /**
+     * Convierte el DTO a entidad Usuario
+     * 
+     * @return Entidad Usuario
+     */
+    public Usuario toEntity() {
+        return Usuario.builder()
+                .idUsuario(idUsuario)
+                .usuario(usuario)
+                .password(password)
+                .nombreCompleto(nombreCompleto)
+                .email(email)
+                .telefono(telefono)
+                .direccion(direccion)
+                .estado(estado)
+                .intentosFallidos(intentosFallidos)
+                .build();
     }
 }

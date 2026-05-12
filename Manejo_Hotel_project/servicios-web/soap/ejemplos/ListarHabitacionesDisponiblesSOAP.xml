@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Header>
+        <tns:Autenticacion>
+            <tns:usuario>guest@hermosacartagena.com</tns:usuario>
+            <tns:token>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</tns:token>
+            <tns:timestamp>2026-05-11T14:40:00Z</tns:timestamp>
+        </tns:Autenticacion>
+    </soap:Header>
+    
+    <soap:Body>
+        <tns:listarHabitacionesDisponiblesRequest>
+            <tns:fechaInicio>2026-06-15</tns:fechaInicio>
+            <tns:fechaFin>2026-06-18</tns:fechaFin>
+            <tns:capacidad>2</tns:capacidad>
+        </tns:listarHabitacionesDisponiblesRequest>
+    </soap:Body>
+    
+</soap:Envelope>

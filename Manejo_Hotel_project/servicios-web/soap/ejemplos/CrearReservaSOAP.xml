@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Header>
+        <tns:Autenticacion>
+            <tns:usuario>juan.perez@email.com</tns:usuario>
+            <tns:token>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</tns:token>
+            <tns:timestamp>2026-05-11T14:35:00Z</tns:timestamp>
+        </tns:Autenticacion>
+    </soap:Header>
+    
+    <soap:Body>
+        <tns:crearReservaRequest>
+            <tns:reserva>
+                <tns:idCliente>1001</tns:idCliente>
+                <tns:idHabitacion>205</tns:idHabitacion>
+                <tns:fechaCheckIn>2026-06-15</tns:fechaCheckIn>
+                <tns:fechaCheckOut>2026-06-18</tns:fechaCheckOut>
+                <tns:estado>pendiente</tns:estado>
+                <tns:totalPagado>0.00</tns:totalPagado>
+            </tns:reserva>
+        </tns:crearReservaRequest>
+    </soap:Body>
+    
+</soap:Envelope>

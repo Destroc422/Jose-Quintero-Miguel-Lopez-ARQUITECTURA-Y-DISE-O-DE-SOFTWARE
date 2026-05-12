@@ -71,12 +71,12 @@ public class JwtTokenProvider {
         Instant fechaExpiracion = ahora.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience)
-                .setIssuedAt(Date.from(ahora))
-                .setExpiration(Date.from(fechaExpiracion))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .subject(username)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience).and()
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(fechaExpiracion))
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -91,13 +91,13 @@ public class JwtTokenProvider {
         Instant fechaExpiracion = ahora.plus(refreshExpirationInSeconds, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience + "-refresh")
-                .setIssuedAt(Date.from(ahora))
-                .setExpiration(Date.from(fechaExpiracion))
+                .subject(username)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience + "-refresh").and()
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(fechaExpiracion))
                 .claim("type", "refresh")
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -114,14 +114,14 @@ public class JwtTokenProvider {
         Instant fechaExpiracion = ahora.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience)
-                .setIssuedAt(Date.from(ahora))
-                .setExpiration(Date.from(fechaExpiracion))
+                .subject(username)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience).and()
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(fechaExpiracion))
                 .claim("userId", idUsuario)
                 .claim("roles", roles)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -142,11 +142,11 @@ public class JwtTokenProvider {
      * @return ID del usuario
      */
     public Long obtenerIdUsuarioDesdeToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         
         return claims.get("userId", Long.class);
     }
@@ -159,11 +159,11 @@ public class JwtTokenProvider {
      */
     @SuppressWarnings("unchecked")
     public List<String> obtenerRolesDesdeToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         
         return claims.get("roles", List.class);
     }
@@ -186,11 +186,11 @@ public class JwtTokenProvider {
      */
     public boolean esTokenRefresco(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
             
             return "refresh".equals(claims.get("type"));
         } catch (Exception e) {
@@ -206,10 +206,10 @@ public class JwtTokenProvider {
      */
     public boolean validarToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+            Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token);
+                .parseSignedClaims(token);
             
             return true;
         } catch (SecurityException ex) {
@@ -289,11 +289,11 @@ public class JwtTokenProvider {
      * @return Valor del claim
      */
     public <T> T getClaimDesdeToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        final Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         
         return claimsResolver.apply(claims);
     }
@@ -319,13 +319,13 @@ public class JwtTokenProvider {
         Instant fechaExpiracion = ahora.plus(1, ChronoUnit.HOURS); // Válido por 1 hora
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuer(jwtIssuer)
-                .setAudience(jwtAudience + "-reset")
-                .setIssuedAt(Date.from(ahora))
-                .setExpiration(Date.from(fechaExpiracion))
+                .subject(username)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience + "-reset").and()
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(fechaExpiracion))
                 .claim("type", "reset-password")
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -337,11 +337,11 @@ public class JwtTokenProvider {
      */
     public boolean validarTokenResetPassword(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
             
             return "reset-password".equals(claims.get("type"));
         } catch (Exception e) {
@@ -358,11 +358,11 @@ public class JwtTokenProvider {
      */
     public String obtenerInformacionToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
             
             return String.format(
                 "Token Info - Subject: %s, Issuer: %s, Audience: %s, Issued: %s, Expires: %s, Roles: %s",

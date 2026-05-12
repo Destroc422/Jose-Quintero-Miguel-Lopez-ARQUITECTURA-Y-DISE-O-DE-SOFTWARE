@@ -1,0 +1,173 @@
+# =============================================
+# SISTEMA DE GESTIÓN TURÍSTICA "HERMOSA CARTAGENA" 3.0
+# DOCKER COMPOSE - ARQUITECTURA MODERNA UNIFICADA
+# =============================================
+
+version: '3.8'
+
+services:
+  # Aplicación Principal Spring Boot
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hermosa-cartagena-app
+    ports:
+      - "8080:8080"  # API principal
+      - "8081:8081"  # Actuator/Management
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DATABASE_URL=jdbc:mysql://mysql:3306/hermosa_cartagena
+      - DATABASE_USERNAME=hermosa_user
+      - DATABASE_PASSWORD=${DB_PASSWORD:-hermosa_password_2024}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-hermosa_jwt_secret_key_2024_super_secure}
+      - JWT_EXPIRATION=3600000
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+      - LOG_LEVEL=INFO
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Base de Datos MySQL 8.0
+  mysql:
+    image: mysql:8.0
+    container_name: hermosa-cartagena-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password_2024}
+      - MYSQL_DATABASE=hermosa_cartagena
+      - MYSQL_USER=hermosa_user
+      - MYSQL_PASSWORD=${DB_PASSWORD:-hermosa_password_2024}
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/01_create_database.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/02_insert_datos_prueba.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - ./database/mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Redis para Caching
+  redis:
+    image: redis:7-alpine
+    container_name: hermosa-cartagena-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx como Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: hermosa-cartagena-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus para Monitoreo
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hermosa-cartagena-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+
+  # Grafana para Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hermosa-cartagena-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin_2024}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - hermosa-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+# Volumes persistentes
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# Redes
+networks:
+  hermosa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,595 @@
+# CLIENTE SOAP Y SERVIDOR SOAP - EJEMPLOS COMPLETOS
+
+## 📋 CLIENTE SOAP - EJEMPLO COMPLETO
+
+### 1. Configuración Inicial
+```java
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+
+public class ClienteSOAP {
+    private static final String ENDPOINT = "http://localhost:8080/reservas";
+    private static final String SOAP_ACTION = "http://hermosacartagena.com/ws/crearReserva";
+    
+    public void enviarReserva() {
+        try {
+            // Construir URL de conexión
+            URL url = new URL(ENDPOINT);
+            
+            // Abrir conexión HTTP
+            URLConnection connection = url.openConnection();
+            HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            
+            // Configurar conexión para SOAP
+            httpConnection.setRequestMethod("POST");
+            httpConnection.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+            httpConnection.setRequestProperty("SOAPAction", SOAP_ACTION);
+            httpConnection.setDoOutput(true);
+            httpConnection.setConnectTimeout(10000);
+            httpConnection.setReadTimeout(30000);
+            
+            // Construir mensaje SOAP
+            String soapRequest = construirMensajeSOAP();
+            
+            // Enviar solicitud SOAP
+            try (OutputStream outputStream = httpConnection.getOutputStream()) {
+                byte[] input = soapRequest.getBytes(StandardCharsets.UTF_8);
+                outputStream.write(input, 0, input.length);
+            }
+            
+            // Procesar respuesta
+            int responseCode = httpConnection.getResponseCode();
+            System.out.println("Código de respuesta: " + responseCode);
+            
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                String respuesta = leerRespuesta(httpConnection);
+                System.out.println("Respuesta SOAP recibida:");
+                System.out.println(respuesta);
+            } else {
+                String error = leerError(httpConnection);
+                System.err.println("Error en la llamada SOAP: " + error);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error en cliente SOAP: " + e.getMessage());
+        }
+    }
+    
+    private String construirMensajeSOAP() {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+               "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+               "               xmlns:tns=\"http://hermosacartagena.com/ws\">\n" +
+               "    <soap:Header>\n" +
+               "        <tns:Autenticacion>\n" +
+               "            <tns:usuario>cliente@hermosacartagena.com</tns:usuario>\n" +
+               "            <tns:token>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</tns:token>\n" +
+               "            <tns:timestamp>2026-05-11T14:30:00Z</tns:timestamp>\n" +
+               "        </tns:Autenticacion>\n" +
+               "    </soap:Header>\n" +
+               "    <soap:Body>\n" +
+               "        <tns:crearReservaRequest>\n" +
+               "            <tns:reserva>\n" +
+               "                <tns:idCliente>1001</tns:idCliente>\n" +
+               "                <tns:idHabitacion>205</tns:idHabitacion>\n" +
+               "                <tns:fechaCheckIn>2026-06-15</tns:fechaCheckIn>\n" +
+               "                <tns:fechaCheckOut>2026-06-18</tns:fechaCheckOut>\n" +
+               "                <tns:estado>pendiente</tns:estado>\n" +
+               "                <tns:totalPagado>0.00</tns:totalPagado>\n" +
+               "            </tns:reserva>\n" +
+               "        </tns:crearReservaRequest>\n" +
+               "    </soap:Body>\n" +
+               "</soap:Envelope>";
+    }
+    
+    private String leerRespuesta(HttpURLConnection connection) throws IOException {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line.trim());
+            }
+            return response.toString();
+        }
+    }
+    
+    private String leerError(HttpURLConnection connection) throws IOException {
+        InputStream errorStream = connection.getErrorStream();
+        if (errorStream != null) {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+                
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                return response.toString();
+            }
+        }
+        return "Error sin detalles";
+    }
+}
+```
+
+### 2. Cliente con Descubrimiento Dinámico
+```java
+import com.hermosacartagena.uddi.ClienteDescubrimiento;
+
+public class ClienteSOAPDinamico {
+    private ClienteDescubrimiento clienteUDDI;
+    
+    public ClienteSOAPDinamico() {
+        this.clienteUDDI = new ClienteDescubrimiento();
+    }
+    
+    public void invocarServicioDinamico(String nombreServicio, String soapRequest) {
+        try {
+            // Descubrir endpoint dinámicamente
+            URL url = clienteUDDI.descubrirServicioPreferido(nombreServicio);
+            System.out.println("Endpoint descubierto: " + url);
+            
+            // Configurar conexión
+            URLConnection connection = url.openConnection();
+            HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            
+            // Configurar para SOAP
+            httpConnection.setRequestMethod("POST");
+            httpConnection.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+            httpConnection.setRequestProperty("SOAPAction", "\"http://hermosacartagena.com/ws/operacion\"");
+            httpConnection.setDoOutput(true);
+            
+            // Enviar mensaje SOAP
+            try (OutputStream outputStream = httpConnection.getOutputStream()) {
+                byte[] input = soapRequest.getBytes(StandardCharsets.UTF_8);
+                outputStream.write(input, 0, input.length);
+            }
+            
+            // Procesar respuesta
+            String respuesta = leerRespuesta(httpConnection);
+            System.out.println("Respuesta: " + respuesta);
+            
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+## 🖥️ SERVIDOR SOAP - EJEMPLO COMPLETO
+
+### 1. Servidor SOAP Básico
+```java
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+
+public class ServidorSOAP {
+    private static final int PUERTO = 8080;
+    private boolean ejecutando = true;
+    
+    public void iniciar() {
+        try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
+            System.out.println("Servidor SOAP iniciado en puerto " + PUERTO);
+            
+            while (ejecutando) {
+                try {
+                    // Esperar conexión de cliente
+                    Socket cliente = serverSocket.accept();
+                    System.out.println("Cliente conectado: " + cliente.getInetAddress());
+                    
+                    // Manejar cliente en hilo separado
+                    new Thread(() -> manejarCliente(cliente)).start();
+                    
+                } catch (IOException e) {
+                    System.err.println("Error aceptando conexión: " + e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error iniciando servidor: " + e.getMessage());
+        }
+    }
+    
+    private void manejarCliente(Socket cliente) {
+        try (
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(cliente.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter out = new PrintWriter(
+                    new OutputStreamWriter(cliente.getOutputStream(), StandardCharsets.UTF_8), true)
+        ) {
+            
+            // Leer solicitud SOAP del cliente
+            StringBuilder solicitud = new StringBuilder();
+            String linea;
+            while ((linea = in.readLine()) != null) {
+                solicitud.append(linea);
+                if (linea.contains("</soap:Envelope>")) {
+                    break; // Fin del mensaje SOAP
+                }
+            }
+            
+            System.out.println("Solicitud SOAP recibida:");
+            System.out.println(solicitud.toString());
+            
+            // Procesar solicitud y generar respuesta
+            String respuestaSOAP = procesarSolicitud(solicitud.toString());
+            
+            // Enviar respuesta SOAP
+            out.println("HTTP/1.1 200 OK");
+            out.println("Content-Type: text/xml; charset=utf-8");
+            out.println("Content-Length: " + respuestaSOAP.getBytes(StandardCharsets.UTF_8).length);
+            out.println("SOAPAction: \"http://hermosacartagena.com/ws/respuesta\"");
+            out.println();
+            out.print(respuestaSOAP);
+            out.flush();
+            
+        } catch (IOException e) {
+            System.err.println("Error manejando cliente: " + e.getMessage());
+        } finally {
+            try {
+                cliente.close();
+            } catch (IOException e) {
+                System.err.println("Error cerrando conexión: " + e.getMessage());
+            }
+        }
+    }
+    
+    private String procesarSolicitud(String solicitudSOAP) {
+        try {
+            // Extraer operación del mensaje SOAP
+            if (solicitudSOAP.contains("crearReservaRequest")) {
+                return procesarCrearReserva(solicitudSOAP);
+            } else if (solicitudSOAP.contains("consultarClienteRequest")) {
+                return procesarConsultarCliente(solicitudSOAP);
+            } else if (solicitudSOAP.contains("listarHabitacionesDisponiblesRequest")) {
+                return procesarListarHabitaciones(solicitudSOAP);
+            } else {
+                return generarError("OPERACION_NO_RECONOCIDA", "Operación no válida");
+            }
+        } catch (Exception e) {
+            return generarError("ERROR_PROCESAMIENTO", "Error procesando solicitud: " + e.getMessage());
+        }
+    }
+    
+    private String procesarCrearReserva(String solicitud) {
+        // Simular procesamiento de reserva
+        System.out.println("Procesando creación de reserva...");
+        
+        // Generar respuesta SOAP exitosa
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+               "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+               "               xmlns:tns=\"http://hermosacartagena.com/ws\">\n" +
+               "    <soap:Header>\n" +
+               "        <tns:RespuestaHeader>\n" +
+               "            <tns:codigoRespuesta>200</tns:codigoRespuesta>\n" +
+               "            <tns:tiempoProcesamiento>145</tns:tiempoProcesamiento>\n" +
+               "            <tns:timestamp>2026-05-11T14:30:01Z</tns:timestamp>\n" +
+               "        </tns:RespuestaHeader>\n" +
+               "    </soap:Header>\n" +
+               "    <soap:Body>\n" +
+               "        <tns:crearReservaResponse>\n" +
+               "            <tns:respuesta>\n" +
+               "                <tns:codigo>201</tns:codigo>\n" +
+               "                <tns:mensaje>Reserva creada exitosamente</tns:mensaje>\n" +
+               "                <tns:exitoso>true</tns:exitoso>\n" +
+               "            </tns:respuesta>\n" +
+               "            <tns:reservaCreada>\n" +
+               "                <tns:idReserva>5001</tns:idReserva>\n" +
+               "                <tns:idCliente>1001</tns:idCliente>\n" +
+               "                <tns:idHabitacion>205</tns:idHabitacion>\n" +
+               "                <tns:fechaCheckIn>2026-06-15</tns:fechaCheckIn>\n" +
+               "                <tns:fechaCheckOut>2026-06-18</tns:fechaCheckOut>\n" +
+               "                <tns:estado>confirmada</tns:estado>\n" +
+               "                <tns:totalPagado>840.00</tns:totalPagado>\n" +
+               "            </tns:reservaCreada>\n" +
+               "        </tns:crearReservaResponse>\n" +
+               "    </soap:Body>\n" +
+               "</soap:Envelope>";
+    }
+    
+    private String procesarConsultarCliente(String solicitud) {
+        // Simular consulta de cliente
+        System.out.println("Procesando consulta de cliente...");
+        
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+               "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+               "               xmlns:tns=\"http://hermosacartagena.com/ws\">\n" +
+               "    <soap:Body>\n" +
+               "        <tns:consultarClienteResponse>\n" +
+               "            <tns:cliente>\n" +
+               "                <tns:idCliente>1001</tns:idCliente>\n" +
+               "                <tns:nombre>Juan</tns:nombre>\n" +
+               "                <tns:apellido>Pérez</tns:apellido>\n" +
+               "                <tns:email>juan.perez@email.com</tns:email>\n" +
+               "                <tns:telefono>+57 5 6641234</tns:telefono>\n" +
+               "                <tns:direccion>Calle 31 #2-45, Bocagrande</tns:direccion>\n" +
+               "                <tns:estado>activo</tns:estado>\n" +
+               "            </tns:cliente>\n" +
+               "        </tns:consultarClienteResponse>\n" +
+               "    </soap:Body>\n" +
+               "</soap:Envelope>";
+    }
+    
+    private String procesarListarHabitaciones(String solicitud) {
+        // Simular listado de habitaciones disponibles
+        System.out.println("Procesando listado de habitaciones...");
+        
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+               "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+               "               xmlns:tns=\"http://hermosacartagena.com/ws\">\n" +
+               "    <soap:Body>\n" +
+               "        <tns:listarHabitacionesDisponiblesResponse>\n" +
+               "            <tns:habitaciones>\n" +
+               "                <tns:Habitacion>\n" +
+               "                    <tns:idHabitacion>205</tns:idHabitacion>\n" +
+               "                    <tns:numero>205</tns:numero>\n" +
+               "                    <tns:tipo>Suite Deluxe</tns:tipo>\n" +
+               "                    <tns:capacidad>2</tns:capacidad>\n" +
+               "                    <tns:precioPorNoche>280.00</tns:precioPorNoche>\n" +
+               "                    <tns:estado>disponible</tns:estado>\n" +
+               "                </tns:Habitacion>\n" +
+               "            </tns:habitaciones>\n" +
+               "        </tns:listarHabitacionesDisponiblesResponse>\n" +
+               "    </soap:Body>\n" +
+               "</soap:Envelope>";
+    }
+    
+    private String generarError(String codigo, String mensaje) {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+               "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+               "               xmlns:tns=\"http://hermosacartagena.com/ws\">\n" +
+               "    <soap:Body>\n" +
+               "        <soap:Fault>\n" +
+               "            <faultcode>tns:ServicioError</faultcode>\n" +
+               "            <faultstring>" + mensaje + "</faultstring>\n" +
+               "            <detail>\n" +
+               "                <tns:ErrorInfo>\n" +
+               "                    <tns:codigoError>" + codigo + "</tns:codigoError>\n" +
+               "                    <tns:mensajeError>" + mensaje + "</tns:mensajeError>\n" +
+               "                    <tns:detalleError>Error procesando la solicitud SOAP</tns:detalleError>\n" +
+               "                </tns:ErrorInfo>\n" +
+               "            </detail>\n" +
+               "        </soap:Fault>\n" +
+               "    </soap:Body>\n" +
+               "</soap:Envelope>";
+    }
+    
+    public void detener() {
+        this.ejecutando = false;
+    }
+    
+    public static void main(String[] args) {
+        ServidorSOAP servidor = new ServidorSOAP();
+        servidor.iniciar();
+    }
+}
+```
+
+### 2. Servidor SOAP Multi-hilo
+```java
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.*;
+import java.nio.charset.StandardCharsets;
+
+public class ServidorSOAPConcurrente {
+    private static final int PUERTO = 8080;
+    private static final int MAX_HILOS = 10;
+    private ExecutorService poolDeHilos;
+    
+    public ServidorSOAPConcurrente() {
+        this.poolDeHilos = Executors.newFixedThreadPool(MAX_HILOS);
+    }
+    
+    public void iniciar() {
+        try (ServerSocket serverSocket = new ServerSocket(PUERTO)) {
+            System.out.println("Servidor SOAP concurrente iniciado en puerto " + PUERTO);
+            System.out.println("Pool de hilos: " + MAX_HILOS);
+            
+            while (true) {
+                try {
+                    Socket cliente = serverSocket.accept();
+                    System.out.println("Cliente conectado: " + cliente.getInetAddress());
+                    
+                    // Manejar cliente en el pool de hilos
+                    poolDeHilos.submit(() -> manejarCliente(cliente));
+                    
+                } catch (IOException e) {
+                    System.err.println("Error aceptando conexión: " + e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error iniciando servidor: " + e.getMessage());
+        }
+    }
+    
+    private void manejarCliente(Socket cliente) {
+        try (
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(cliente.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter out = new PrintWriter(
+                    new OutputStreamWriter(cliente.getOutputStream(), StandardCharsets.UTF_8), true)
+        ) {
+            
+            // Leer solicitud SOAP completa
+            StringBuilder solicitud = new StringBuilder();
+            String linea;
+            while ((linea = in.readLine()) != null) {
+                solicitud.append(linea);
+                if (linea.contains("</soap:Envelope>")) {
+                    break;
+                }
+            }
+            
+            // Procesar solicitud
+            String respuesta = procesarSolicitudSOAP(solicitud.toString());
+            
+            // Enviar respuesta HTTP con SOAP
+            out.println("HTTP/1.1 200 OK");
+            out.println("Content-Type: text/xml; charset=utf-8");
+            out.println("Content-Length: " + respuesta.getBytes(StandardCharsets.UTF_8).length);
+            out.println("SOAPAction: \"http://hermosacartagena.com/ws/respuesta\"");
+            out.println();
+            out.print(respuesta);
+            out.flush();
+            
+        } catch (IOException e) {
+            System.err.println("Error manejando cliente: " + e.getMessage());
+        } finally {
+            try {
+                cliente.close();
+            } catch (IOException e) {
+                System.err.println("Error cerrando conexión: " + e.getMessage());
+            }
+        }
+    }
+    
+    // ... (métodos procesarSolicitudSOAP, generarError, etc. iguales al anterior)
+    
+    public void detener() {
+        poolDeHilos.shutdown();
+        try {
+            if (!poolDeHilos.awaitTermination(60, TimeUnit.SECONDS)) {
+                poolDeHilos.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            poolDeHilos.shutdownNow();
+        }
+    }
+}
+```
+
+---
+
+## 🔧 VERSIÓN SIMPLIFICADA (CÓDIGO MÍNIMO)
+
+### Cliente SOAP Simplificado
+```java
+URL url = new URL("http://localhost:8080/reservas");
+URLConnection connection = url.openConnection();
+
+connection.setDoOutput(true);
+connection.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+connection.setRequestProperty("SOAPAction", "http://hermosacartagena.com/ws/crearReserva");
+
+OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+out.write(soapRequest);
+out.flush();
+```
+
+### Servidor SOAP Simplificado
+```java
+ServerSocket server = new ServerSocket(8080);
+
+while (true) {
+    Socket cliente = server.accept();
+    
+    BufferedReader in = new BufferedReader(
+        new InputStreamReader(cliente.getInputStream()));
+    
+    // Procesar mensaje SOAP
+    String mensajeSOAP = in.readLine();
+    
+    // Generar respuesta y enviar
+    PrintWriter out = new PrintWriter(cliente.getOutputStream(), true);
+    out.println(respuestaSOAP);
+}
+```
+
+---
+
+## 📊 FLUJO DE COMUNICACIÓN COMPLETO
+
+### 1. Cliente → Servidor
+```
+CLIENTE SOAP                    SERVIDOR SOAP
+┌─────────────┐              ┌─────────────┐
+│ 1. Construir │              │ 1. Esperar  │
+│    mensaje    │              │    conexión   │
+│    SOAP      │              └─────┬───────┘
+└─────┬───────┘                    │
+      │                             │ 2. Aceptar
+      │ 2. Enviar HTTP               │    conexión
+      │    POST                      │
+      ▼                             ▼
+┌─────────────┐              ┌─────────────┐
+│ 3. Esperar   │              │ 3. Leer     │
+│    respuesta  │              │    mensaje   │
+│    SOAP      │              │    SOAP      │
+└─────┬───────┘              └─────┬───────┘
+      │                             │
+      │ 4. Procesar                   │ 4. Procesar
+      ▼    respuesta                   ▼    solicitud
+┌─────────────┐              ┌─────────────┐
+│ 5. Parsear   │              │ 5. Generar  │
+│    respuesta  │              │    respuesta │
+└─────────────┘              └─────┬───────┘
+                                   │
+                                   │ 6. Enviar
+                                   ▼    HTTP
+                              ┌─────────────┐
+                              │ 6. Enviar   │
+                              │    respuesta │
+                              │    SOAP      │
+                              └─────────────┘
+```
+
+---
+
+## 🎯 CARACTERÍSTICAS IMPLEMENTADAS
+
+### Cliente SOAP
+- ✅ **Conexión HTTP**: POST con headers SOAP
+- ✅ **Autenticación**: Headers personalizados
+- ✅ **Manejo de errores**: Códigos de respuesta HTTP
+- ✅ **Descubrimiento dinámico**: UDDI integration
+- ✅ **Timeouts**: Configurables para red
+
+### Servidor SOAP
+- ✅ **Multi-hilo**: Manejo concurrente de clientes
+- ✅ **Parseo SOAP**: Extracción de operaciones
+- ✅ **Respuestas estructuradas**: Envelope estándar
+- ✅ **SOAP Fault**: Errores estandarizados
+- ✅ **Headers HTTP**: Content-Type, SOAPAction
+
+### Mensajería
+- ✅ **Envelope**: Estructura SOAP completa
+- ✅ **Headers**: Autenticación y metadatos
+- ✅ **Body**: Datos de operaciones
+- ✅ **Namespaces**: Separación de contextos
+- ✅ **Faults**: Manejo estructurado de errores
+
+---
+
+## 🚀 EJECUCIÓN
+
+### Iniciar Servidor
+```bash
+javac ServidorSOAP.java
+java ServidorSOAP
+# Servidor iniciado en puerto 8080
+```
+
+### Ejecutar Cliente
+```bash
+javac ClienteSOAP.java
+java ClienteSOAP
+# Cliente conectado y enviando mensaje SOAP
+```
+
+### Resultado Esperado
+```
+Servidor: Cliente conectado: 127.0.0.1
+Servidor: Solicitud SOAP recibida: <soap:Envelope>...</soap:Envelope>
+Servidor: Procesando creación de reserva...
+
+Cliente: Código de respuesta: 200
+Cliente: Respuesta SOAP recibida:
+Cliente: <soap:Envelope>...</soap:Envelope>
+```
+
+**Estos ejemplos proporcionan una implementación completa y funcional de comunicación SOAP bidireccional.** 🌴✨

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Header>
+        <tns:RespuestaHeader>
+            <tns:codigoRespuesta>200</tns:codigoRespuesta>
+            <tns:tiempoProcesamiento>145</tns:tiempoProcesamiento>
+            <tns:timestamp>2026-05-11T14:30:01Z</tns:timestamp>
+        </tns:RespuestaHeader>
+    </soap:Header>
+    
+    <soap:Body>
+        <tns:registrarClienteResponse>
+            <tns:respuesta>
+                <tns:codigo>201</tns:codigo>
+                <tns:mensaje>Cliente registrado exitosamente</tns:mensaje>
+                <tns:exitoso>true</tns:exitoso>
+            </tns:respuesta>
+            <tns:clienteRegistrado>
+                <tns:idCliente>1001</tns:idCliente>
+                <tns:nombre>Juan</tns:nombre>
+                <tns:apellido>Pérez</tns:apellido>
+                <tns:email>juan.perez@email.com</tns:email>
+                <tns:telefono>+57 5 6641234</tns:telefono>
+                <tns:direccion>Calle 31 #2-45, Bocagrande</tns:direccion>
+                <tns:tipoDocumento>CC</tns:tipoDocumento>
+                <tns:numeroDocumento>123456789</tns:numeroDocumento>
+                <tns:puntosLealtad>100</tns:puntosLealtad>
+                <tns:estado>activo</tns:estado>
+            </tns:clienteRegistrado>
+        </tns:registrarClienteResponse>
+    </soap:Body>
+    
+</soap:Envelope>

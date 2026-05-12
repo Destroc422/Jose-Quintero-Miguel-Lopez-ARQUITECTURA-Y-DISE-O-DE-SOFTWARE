@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Calidad - Hermosa Cartagena</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .metric-card {
+            @apply bg-white rounded-lg shadow-lg p-6 transition-transform hover:scale-105;
+        }
+        .metric-value {
+            @apply text-3xl font-bold text-blue-600;
+        }
+        .metric-label {
+            @apply text-gray-600 text-sm uppercase tracking-wide;
+        }
+        .status-good { @apply text-green-600; }
+        .status-warning { @apply text-yellow-600; }
+        .status-danger { @apply text-red-600; }
+        .chart-container {
+            @apply bg-white rounded-lg shadow-lg p-6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold">🏨 Hermosa Cartagena</h1>
+                    <p class="text-blue-100">Dashboard de Calidad de Software</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-blue-100">Última actualización</p>
+                    <p class="text-lg font-semibold" id="lastUpdate">--</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- KPI Cards -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">📊 Indicadores Clave de Rendimiento</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Test Coverage -->
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="metric-label">Test Coverage</span>
+                        <span class="status-good text-2xl">✅</span>
+                    </div>
+                    <div class="metric-value">78%</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 78%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Objetivo: 80%</p>
+                </div>
+
+                <!-- Code Quality -->
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="metric-label">Code Quality</span>
+                        <span class="status-warning text-2xl">⚠️</span>
+                    </div>
+                    <div class="metric-value">B</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">SonarQube Rating</p>
+                </div>
+
+                <!-- Technical Debt -->
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="metric-label">Technical Debt</span>
+                        <span class="status-warning text-2xl">⚠️</span>
+                    </div>
+                    <div class="metric-value">2.5d</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 25%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Días para resolver</p>
+                </div>
+
+                <!-- Bugs -->
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="metric-label">Bugs</span>
+                        <span class="status-good text-2xl">✅</span>
+                    </div>
+                    <div class="metric-value">3</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 10%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Críticos: 0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Code Complexity Chart -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">📈 Complejidad de Código por Clase</h3>
+                <canvas id="complexityChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Test Coverage Trend -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">📊 Tendencia de Test Coverage</h3>
+                <canvas id="coverageChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Code Quality Distribution -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">🎯 Distribución de Calidad</h3>
+                <canvas id="qualityChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Technical Debt Breakdown -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">💰 Desglose de Deuda Técnica</h3>
+                <canvas id="debtChart" width="400" height="200"></canvas>
+            </div>
+        </section>
+
+        <!-- Detailed Metrics Table -->
+        <section class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">📋 Métricas Detalladas por Clase</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clase</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LOC</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WMC</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CBO</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complejidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deuda Técnica</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="metricsTable">
+                        <!-- Table content will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Quality Gates Status -->
+        <section class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+                <h4 class="font-semibold text-green-700 mb-2">✅ Quality Gates Pasados</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• New code coverage ≥ 80%</li>
+                    <li>• No critical security issues</li>
+                    <li>• All tests passing</li>
+                    <li>• Documentation coverage ≥ 70%</li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-500">
+                <h4 class="font-semibold text-yellow-700 mb-2">⚠️ Quality Gates con Advertencias</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Technical debt ratio: 2.5% (objetivo: <2%)</li>
+                    <li>• Code duplication: 3.2% (objetivo: <3%)</li>
+                    <li>• Maintainability rating: B (objetivo: A)</li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+                <h4 class="font-semibold text-red-700 mb-2">❌ Quality Gates Fallidos</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Reliability rating: C (objetivo: B+)</li>
+                    <li>• Security hotspots: 5 (objetivo: 0)</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-6 py-4">
+            <div class="text-center">
+                <p>🏨 Sistema de Gestión Turística Hermosa Cartagena - Dashboard de Calidad</p>
+                <p class="text-gray-400 text-sm">Generado automáticamente | Actualizado en tiempo real</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update timestamp
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+
+        // Sample data for charts (in production, this would come from API)
+        const complexityData = {
+            labels: ['UsuarioService', 'ReservaService', 'HabitacionService', 'AuthController', 'ClienteController'],
+            datasets: [{
+                label: 'WMC',
+                data: [12, 8, 6, 15, 9],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        const coverageData = {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Test Coverage %',
+                data: [65, 68, 72, 75, 78, 78],
+                borderColor: 'rgba(34, 197, 94, 1)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.4
+            }]
+        };
+
+        const qualityData = {
+            labels: ['A', 'B', 'C', 'D', 'E'],
+            datasets: [{
+                label: 'Número de Clases',
+                data: [8, 12, 5, 2, 1],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(250, 204, 21, 0.8)',
+                    'rgba(251, 146, 60, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(127, 29, 29, 0.8)'
+                ]
+            }]
+        };
+
+        const debtData = {
+            labels: ['Code Smells', 'Complexity', 'Duplication', 'Coverage', 'Security'],
+            datasets: [{
+                label: 'Horas',
+                data: [8, 12, 6, 4, 2],
+                backgroundColor: 'rgba(251, 146, 60, 0.8)',
+                borderColor: 'rgba(251, 146, 60, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Initialize charts
+        new Chart(document.getElementById('complexityChart'), {
+            type: 'bar',
+            data: complexityData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('coverageChart'), {
+            type: 'line',
+            data: coverageData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('qualityChart'), {
+            type: 'doughnut',
+            data: qualityData,
+            options: {
+                responsive: true
+            }
+        });
+
+        new Chart(document.getElementById('debtChart'), {
+            type: 'bar',
+            data: debtData,
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Populate metrics table
+        const tableData = [
+            { class: 'UsuarioService', loc: 245, wmc: 12, cbo: 8, complexity: 15, debt: 2.1, status: 'warning' },
+            { class: 'ReservaService', loc: 189, wmc: 8, cbo: 6, complexity: 10, debt: 1.5, status: 'good' },
+            { class: 'HabitacionService', loc: 156, wmc: 6, cbo: 5, complexity: 8, debt: 0.8, status: 'good' },
+            { class: 'AuthController', loc: 134, wmc: 15, cbo: 9, complexity: 18, debt: 3.2, status: 'danger' },
+            { class: 'ClienteController', loc: 98, wmc: 9, cbo: 4, complexity: 11, debt: 1.1, status: 'good' }
+        ];
+
+        const tableBody = document.getElementById('metricsTable');
+        tableData.forEach(row => {
+            const statusClass = row.status === 'good' ? 'status-good' : 
+                              row.status === 'warning' ? 'status-warning' : 'status-danger';
+            const statusIcon = row.status === 'good' ? '✅' : 
+                             row.status === 'warning' ? '⚠️' : '❌';
+            
+            tableBody.innerHTML += `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.class}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.loc}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.wmc}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.cbo}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.complexity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.debt}h</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass}">${statusIcon}</td>
+                </tr>
+            `;
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+            // In production, fetch fresh data from API
+        }, 30000);
+    </script>
+</body>
+</html>

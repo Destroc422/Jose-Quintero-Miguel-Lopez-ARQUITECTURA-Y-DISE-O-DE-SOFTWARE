@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Header>
+        <tns:Autenticacion>
+            <tns:usuario>admin@hermosacartagena.com</tns:usuario>
+            <tns:token>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</tns:token>
+            <tns:timestamp>2026-05-11T14:30:00Z</tns:timestamp>
+        </tns:Autenticacion>
+    </soap:Header>
+    
+    <soap:Body>
+        <tns:registrarClienteRequest>
+            <tns:cliente>
+                <tns:nombre>Juan</tns:nombre>
+                <tns:apellido>Pérez</tns:apellido>
+                <tns:email>juan.perez@email.com</tns:email>
+                <tns:telefono>+57 5 6641234</tns:telefono>
+                <tns:direccion>Calle 31 #2-45, Bocagrande</tns:direccion>
+                <tns:tipoDocumento>CC</tns:tipoDocumento>
+                <tns:numeroDocumento>123456789</tns:numeroDocumento>
+                <tns:puntosLealtad>0</tns:puntosLealtad>
+                <tns:estado>activo</tns:estado>
+            </tns:cliente>
+        </tns:registrarClienteRequest>
+    </soap:Body>
+    
+</soap:Envelope>

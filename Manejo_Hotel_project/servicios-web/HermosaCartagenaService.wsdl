@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="HermosaCartagenaService"
+             targetNamespace="http://hermosacartagena.com/ws"
+             xmlns:tns="http://hermosacartagena.com/ws"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+    <!-- =============================================
+         TIPOS DE DATOS (TYPES)
+         ============================================= -->
+    
+    <types>
+        <xsd:schema targetNamespace="http://hermosacartagena.com/ws">
+            
+            <!-- Entidad Cliente -->
+            <xsd:complexType name="Cliente">
+                <xsd:sequence>
+                    <xsd:element name="idCliente" type="xsd:long"/>
+                    <xsd:element name="nombre" type="xsd:string"/>
+                    <xsd:element name="apellido" type="xsd:string"/>
+                    <xsd:element name="email" type="xsd:string"/>
+                    <xsd:element name="telefono" type="xsd:string"/>
+                    <xsd:element name="direccion" type="xsd:string"/>
+                    <xsd:element name="tipoDocumento" type="xsd:string"/>
+                    <xsd:element name="numeroDocumento" type="xsd:string"/>
+                    <xsd:element name="puntosLealtad" type="xsd:int"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+            <!-- Entidad Habitación -->
+            <xsd:complexType name="Habitacion">
+                <xsd:sequence>
+                    <xsd:element name="idHabitacion" type="xsd:long"/>
+                    <xsd:element name="numero" type="xsd:string"/>
+                    <xsd:element name="tipo" type="xsd:string"/>
+                    <xsd:element name="capacidad" type="xsd:int"/>
+                    <xsd:element name="precioPorNoche" type="xsd:decimal"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                    <xsd:element name="descripcion" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+            <!-- Entidad Reserva -->
+            <xsd:complexType name="Reserva">
+                <xsd:sequence>
+                    <xsd:element name="idReserva" type="xsd:long"/>
+                    <xsd:element name="idCliente" type="xsd:long"/>
+                    <xsd:element name="idHabitacion" type="xsd:long"/>
+                    <xsd:element name="fechaCheckIn" type="xsd:date"/>
+                    <xsd:element name="fechaCheckOut" type="xsd:date"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                    <xsd:element name="totalPagado" type="xsd:decimal"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+            <!-- Entidad Servicio -->
+            <xsd:complexType name="Servicio">
+                <xsd:sequence>
+                    <xsd:element name="idServicio" type="xsd:long"/>
+                    <xsd:element name="nombre" type="xsd:string"/>
+                    <xsd:element name="descripcion" type="xsd:string"/>
+                    <xsd:element name="precio" type="xsd:decimal"/>
+                    <xsd:element name="categoria" type="xsd:string"/>
+                    <xsd:element name="disponible" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+            <!-- Respuesta estándar -->
+            <xsd:complexType name="Respuesta">
+                <xsd:sequence>
+                    <xsd:element name="codigo" type="xsd:int"/>
+                    <xsd:element name="mensaje" type="xsd:string"/>
+                    <xsd:element name="exitoso" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+            <!-- Error SOAP -->
+            <xsd:complexType name="ErrorInfo">
+                <xsd:sequence>
+                    <xsd:element name="codigoError" type="xsd:string"/>
+                    <xsd:element name="mensajeError" type="xsd:string"/>
+                    <xsd:element name="detalleError" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            
+        </xsd:schema>
+    </types>
+
+    <!-- =============================================
+         MENSAJES (MESSAGES)
+         ============================================= -->
+
+    <!-- Operaciones de Cliente -->
+    <message name="RegistrarClienteRequest">
+        <part name="cliente" type="tns:Cliente"/>
+    </message>
+    
+    <message name="RegistrarClienteResponse">
+        <part name="respuesta" type="tns:Respuesta"/>
+        <part name="clienteRegistrado" type="tns:Cliente"/>
+    </message>
+    
+    <message name="ConsultarClienteRequest">
+        <part name="idCliente" type="xsd:long"/>
+    </message>
+    
+    <message name="ConsultarClienteResponse">
+        <part name="cliente" type="tns:Cliente"/>
+    </message>
+    
+    <message name="ListarClientesRequest">
+        <part name="pagina" type="xsd:int"/>
+        <part name="tamano" type="xsd:int"/>
+    </message>
+    
+    <message name="ListarClientesResponse">
+        <part name="clientes" type="tns:Cliente"/>
+    </message>
+
+    <!-- Operaciones de Habitación -->
+    <message name="ConsultarHabitacionRequest">
+        <part name="idHabitacion" type="xsd:long"/>
+    </message>
+    
+    <message name="ConsultarHabitacionResponse">
+        <part name="habitacion" type="tns:Habitacion"/>
+    </message>
+    
+    <message name="ListarHabitacionesDisponiblesRequest">
+        <part name="fechaInicio" type="xsd:date"/>
+        <part name="fechaFin" type="xsd:date"/>
+        <part name="capacidad" type="xsd:int"/>
+    </message>
+    
+    <message name="ListarHabitacionesDisponiblesResponse">
+        <part name="habitaciones" type="tns:Habitacion"/>
+    </message>
+
+    <!-- Operaciones de Reserva -->
+    <message name="CrearReservaRequest">
+        <part name="reserva" type="tns:Reserva"/>
+    </message>
+    
+    <message name="CrearReservaResponse">
+        <part name="respuesta" type="tns:Respuesta"/>
+        <part name="reservaCreada" type="tns:Reserva"/>
+    </message>
+    
+    <message name="ConsultarReservaRequest">
+        <part name="idReserva" type="xsd:long"/>
+    </message>
+    
+    <message name="ConsultarReservaResponse">
+        <part name="reserva" type="tns:Reserva"/>
+    </message>
+    
+    <message name="CancelarReservaRequest">
+        <part name="idReserva" type="xsd:long"/>
+    </message>
+    
+    <message name="CancelarReservaResponse">
+        <part name="respuesta" type="tns:Respuesta"/>
+    </message>
+
+    <!-- Operaciones de Servicios -->
+    <message name="ListarServiciosRequest">
+        <part name="categoria" type="xsd:string"/>
+    </message>
+    
+    <message name="ListarServiciosResponse">
+        <part name="servicios" type="tns:Servicio"/>
+    </message>
+    
+    <message name="ConsultarServicioRequest">
+        <part name="idServicio" type="xsd:long"/>
+    </message>
+    
+    <message name="ConsultarServicioResponse">
+        <part name="servicio" type="tns:Servicio"/>
+    </message>
+
+    <!-- Mensajes de error -->
+    <message name="SOAPFaultRequest">
+        <part name="errorInfo" type="tns:ErrorInfo"/>
+    </message>
+
+    <!-- =============================================
+         OPERACIONES (PORT TYPE)
+         ============================================= -->
+
+    <portType name="HermosaCartagenaPortType">
+        
+        <!-- Operaciones de Cliente -->
+        <operation name="registrarCliente">
+            <input message="tns:RegistrarClienteRequest"/>
+            <output message="tns:RegistrarClienteResponse"/>
+            <fault name="ClienteError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+        <operation name="consultarCliente">
+            <input message="tns:ConsultarClienteRequest"/>
+            <output message="tns:ConsultarClienteResponse"/>
+            <fault name="ClienteError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+        <operation name="listarClientes">
+            <input message="tns:ListarClientesRequest"/>
+            <output message="tns:ListarClientesResponse"/>
+        </operation>
+
+        <!-- Operaciones de Habitación -->
+        <operation name="consultarHabitacion">
+            <input message="tns:ConsultarHabitacionRequest"/>
+            <output message="tns:ConsultarHabitacionResponse"/>
+            <fault name="HabitacionError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+        <operation name="listarHabitacionesDisponibles">
+            <input message="tns:ListarHabitacionesDisponiblesRequest"/>
+            <output message="tns:ListarHabitacionesDisponiblesResponse"/>
+            <fault name="HabitacionError" message="tns:SOAPFaultRequest"/>
+        </operation>
+
+        <!-- Operaciones de Reserva -->
+        <operation name="crearReserva">
+            <input message="tns:CrearReservaRequest"/>
+            <output message="tns:CrearReservaResponse"/>
+            <fault name="ReservaError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+        <operation name="consultarReserva">
+            <input message="tns:ConsultarReservaRequest"/>
+            <output message="tns:ConsultarReservaResponse"/>
+            <fault name="ReservaError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+        <operation name="cancelarReserva">
+            <input message="tns:CancelarReservaRequest"/>
+            <output message="tns:CancelarReservaResponse"/>
+            <fault name="ReservaError" message="tns:SOAPFaultRequest"/>
+        </operation>
+
+        <!-- Operaciones de Servicios -->
+        <operation name="listarServicios">
+            <input message="tns:ListarServiciosRequest"/>
+            <output message="tns:ListarServiciosResponse"/>
+        </operation>
+        
+        <operation name="consultarServicio">
+            <input message="tns:ConsultarServicioRequest"/>
+            <output message="tns:ConsultarServicioResponse"/>
+            <fault name="ServicioError" message="tns:SOAPFaultRequest"/>
+        </operation>
+        
+    </portType>
+
+    <!-- =============================================
+         BINDING (SOAP OVER HTTP)
+         ============================================= -->
+
+    <binding name="HermosaCartagenaBinding" type="tns:HermosaCartagenaPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        
+        <!-- Operaciones de Cliente -->
+        <operation name="registrarCliente">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/registrarCliente"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ClienteError">
+                <soap:fault name="ClienteError" use="literal"/>
+            </fault>
+        </operation>
+        
+        <operation name="consultarCliente">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/consultarCliente"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ClienteError">
+                <soap:fault name="ClienteError" use="literal"/>
+            </fault>
+        </operation>
+        
+        <operation name="listarClientes">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/listarClientes"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+
+        <!-- Operaciones de Habitación -->
+        <operation name="consultarHabitacion">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/consultarHabitacion"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="HabitacionError">
+                <soap:fault name="HabitacionError" use="literal"/>
+            </fault>
+        </operation>
+        
+        <operation name="listarHabitacionesDisponibles">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/listarHabitacionesDisponibles"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="HabitacionError">
+                <soap:fault name="HabitacionError" use="literal"/>
+            </fault>
+        </operation>
+
+        <!-- Operaciones de Reserva -->
+        <operation name="crearReserva">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/crearReserva"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ReservaError">
+                <soap:fault name="ReservaError" use="literal"/>
+            </fault>
+        </operation>
+        
+        <operation name="consultarReserva">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/consultarReserva"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ReservaError">
+                <soap:fault name="ReservaError" use="literal"/>
+            </fault>
+        </operation>
+        
+        <operation name="cancelarReserva">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/cancelarReserva"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ReservaError">
+                <soap:fault name="ReservaError" use="literal"/>
+            </fault>
+        </operation>
+
+        <!-- Operaciones de Servicios -->
+        <operation name="listarServicios">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/listarServicios"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        
+        <operation name="consultarServicio">
+            <soap:operation soapAction="http://hermosacartagena.com/ws/consultarServicio"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="ServicioError">
+                <soap:fault name="ServicioError" use="literal"/>
+            </fault>
+        </operation>
+        
+    </binding>
+
+    <!-- =============================================
+         SERVICIO (SERVICE)
+         ============================================= -->
+
+    <service name="HermosaCartagenaService">
+        <documentation>
+            Sistema de Gestión Turística "Hermosa Cartagena" - Servicios Web SOAP
+            Proporciona acceso a las operaciones principales del sistema hotelero.
+        </documentation>
+        
+        <port name="HermosaCartagenaPort" binding="tns:HermosaCartagenaBinding">
+            <soap:address location="http://localhost:8080/hermosacartagena/ws"/>
+        </port>
+    </service>
+
+</definitions>

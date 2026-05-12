@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://hermosacartagena.com/ws">
+    
+    <soap:Body>
+        <soap:Fault>
+            <faultcode>tns:ClienteError</faultcode>
+            <faultstring>Error al registrar cliente: Email ya existe en el sistema</faultstring>
+            <faultactor>http://localhost:8080/hermosacartagena/ws</faultactor>
+            <detail>
+                <tns:ErrorInfo>
+                    <tns:codigoError>CLIENTE_DUPLICADO</tns:codigoError>
+                    <tns:mensajeError>El email juan.perez@email.com ya está registrado</tns:mensajeError>
+                    <tns:detalleError>No se puede crear un nuevo cliente con un email que ya existe en el sistema. Por favor, use un email diferente o recupere su cuenta.</tns:detalleError>
+                </tns:ErrorInfo>
+            </detail>
+        </soap:Fault>
+    </soap:Body>
+    
+</soap:Envelope>
